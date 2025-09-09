@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Sparkles, Heart, Star } from 'lucide-react';
+import confetti from 'canvas-confetti'; // <-- Add this import
 
 export const SuccessAnimation: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(true);
@@ -14,7 +15,35 @@ export const SuccessAnimation: React.FC = () => {
   }>>([]);
 
   useEffect(() => {
-    // Generate confetti particles
+    // Canvas-confetti fireworks animation
+    const duration = 5000; // Slower animation
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+    const randomInRange = (min: number, max: number) =>
+      Math.random() * (max - min) + min;
+
+    const interval = window.setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      });
+    }, 250);
+
+    // Generate confetti particles (existing code)
     const newParticles = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * window.innerWidth,
@@ -32,9 +61,12 @@ export const SuccessAnimation: React.FC = () => {
     // Hide confetti after animation
     const timer = setTimeout(() => {
       setShowConfetti(false);
-    }, 2500);
+    }, 5000); // Slower hide
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -54,7 +86,7 @@ export const SuccessAnimation: React.FC = () => {
                 height: `${particle.size}px`,
                 borderRadius: '50%',
                 transform: `rotate(${particle.rotation}deg)`,
-                animation: `fall 2.5s ease-out forwards, rotate 2.5s linear infinite`,
+                animation: `fall 5s ease-out forwards, rotate 5s linear infinite`, // Slower fall and rotate
               }}
             />
           ))}
@@ -86,18 +118,8 @@ export const SuccessAnimation: React.FC = () => {
             🎉 Congratulations!
           </h2>
           <p className="text-gray-600 mb-4">
-            Your business card has been saved successfully!
+            Your digital business card is ready to share with the world!
           </p>
-          
-          {/* Celebration Text */}
-          <div className="space-y-2">
-            <p className="text-lg font-semibold text-green-600">
-              ✨ Card Created Successfully! ✨
-            </p>
-            <p className="text-sm text-gray-500">
-              Your digital business card is ready to share with the world!
-            </p>
-          </div>
 
           {/* Progress Bar Animation */}
           <div className="mt-6">

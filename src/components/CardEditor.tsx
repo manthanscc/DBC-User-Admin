@@ -37,6 +37,7 @@ import {
   SOCIAL_PLATFORM_COLORS,
 } from "../utils/socialUtils";
 import { SuccessAnimation } from "./SuccessAnimation";
+import { ConfettiSideCannons } from "./ConfettiSideCannons";
 import type { Database } from "../lib/supabase";
 
 type BusinessCard = Database["public"]["Tables"]["business_cards"]["Row"];
@@ -215,6 +216,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+  const [showConfettiCannons, setShowConfettiCannons] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     title: existingCard?.title || "",
@@ -252,6 +254,14 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
     return () => clearTimeout(autoSaveTimer);
   }, [formData, cardId, user]);
+
+  // Watch for publish toggle
+  useEffect(() => {
+    if (formData.is_published) {
+      setShowConfettiCannons(true);
+      setTimeout(() => setShowConfettiCannons(false), 100);
+    }
+  }, [formData.is_published]);
 
   const loadCardData = async () => {
     if (!existingCard) return;
@@ -1203,6 +1213,8 @@ export const CardEditor: React.FC<CardEditorProps> = ({
     <>
       {/* Success Animation Overlay */}
       {showSuccessAnimation && <SuccessAnimation />}
+      {/* Confetti Side Cannons Animation */}
+      <ConfettiSideCannons trigger={showConfettiCannons} />
 
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
