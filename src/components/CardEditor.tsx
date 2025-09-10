@@ -902,7 +902,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
         </div>
 
         {/* Existing Social Links */}
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
           {socialLinks.map((link) => (
             <div
               key={link.id}
@@ -913,7 +913,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                   <img
                     src={getPlatformLogo(link.platform, link.url)}
                     alt={`${link.platform} logo`}
-                    className="w-6 h-6"
+                    className="w-7 h-7"
                   />
                 </div>
                 <div>
@@ -940,19 +940,19 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center gap-2">
                 <a
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
                   title="Open link"
                 >
                   <Globe className="w-4 h-4" />
                 </a>
                 <button
                   onClick={() => removeSocialLink(link.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
                   title="Remove link"
                 >
                   <Trash2 className="w-4 h-4" />
