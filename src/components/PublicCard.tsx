@@ -17,7 +17,6 @@ import {
   ExternalLink,
   Play,
   FileText,
-  
   Eye,
   Share2,
   Download,
@@ -26,7 +25,11 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../lib/supabase";
-import { getSocialIcon, SOCIAL_PLATFORM_COLORS } from "../utils/socialUtils";
+import {
+  getPlatformLogo,
+  getSocialIcon,
+  SOCIAL_PLATFORM_COLORS,
+} from "../utils/socialUtils";
 
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
@@ -579,8 +582,8 @@ export const PublicCard: React.FC = () => {
                     >
                       {card.company}
                     </p>
-                  )} */}                  
-                    {card.bio && (
+                  )} */}
+                  {card.bio && (
                     <p
                       className="text-sm opacity-70"
                       style={{ color: theme.text }}
@@ -604,8 +607,10 @@ export const PublicCard: React.FC = () => {
                     </div>
                   </a>
 
-                   {card.address &&
-                    (card.map_link && typeof card.map_link === "string" && card.map_link.trim() !== "" ? (
+                  {card.address &&
+                    (card.map_link &&
+                    typeof card.map_link === "string" &&
+                    card.map_link.trim() !== "" ? (
                       <a
                         href={card.map_link as string}
                         target="_blank"
@@ -616,13 +621,14 @@ export const PublicCard: React.FC = () => {
                           <MapPin className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500">{card.address}</p>
+                          <p className="text-sm text-gray-500">
+                            {card.address}
+                          </p>
                         </div>
                       </a>
                     ) : (
                       <p className="text-sm mb-2">{card.address}</p>
-                    )
-                  )}
+                    ))}
 
                   {card.phone && (
                     <a
@@ -693,41 +699,41 @@ export const PublicCard: React.FC = () => {
                   borderColor: theme.primary + "50",
                 }}
               >
-                <h3 className="text-xl font-semibold mb-4" style={{ color: theme.text }}>
+                <h3
+                  className="text-xl font-semibold mb-4"
+                  style={{ color: theme.text }}
+                >
                   Get In Touch
                 </h3>
-               
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {socialLinks.map(link => {
-                    const Icon = getSocialIcon(link.platform);
-                    const color = SOCIAL_PLATFORM_COLORS[link.platform] || "#333";
-                    return (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-10 hover:scale-105"
-                      >
-                        <div
-                          className={`w-10 h-10 flex items-center justify-center rounded-full ${link.platform === "GitHub" ? "bg-gray-200" : ""}`}
-                          style={link.platform !== "GitHub" ? { background: color + "33" } : undefined}
-                        >
-                          <Icon className="text-2xl" color={color} />
+                  {socialLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-10 hover:scale-105"
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center rounded-5 ">
+                        <img
+                          src={getPlatformLogo(link.platform, link.url)}
+                          alt={`${link.platform} logo`}
+                          className="w-8 h-8"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">
+                          {link.platform}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            {link.platform}
+                        {link.username && (
+                          <div className="text-xs opacity-75 truncate">
+                            @{link.username}
                           </div>
-                          {link.username && (
-                            <div className="text-xs opacity-75 truncate">
-                              @{link.username}
-                            </div>
-                          )}
-                        </div>
-                      </a>
-                    );
-                  })}
+                        )}
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
 
@@ -832,10 +838,13 @@ export const PublicCard: React.FC = () => {
                             <Star className="w-5 h-5 text-yellow-600" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-600 group-hover:text-blue-600 transition-colors" >
+                            <h4 className="font-medium text-gray-600 group-hover:text-blue-600 transition-colors">
                               {review.title}
                             </h4>
-                            <p className="text-sm" style={{ color: theme.text }}>
+                            <p
+                              className="text-sm"
+                              style={{ color: theme.text }}
+                            >
                               View our customer reviews
                             </p>
                           </div>

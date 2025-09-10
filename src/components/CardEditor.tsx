@@ -33,11 +33,10 @@ import {
   generateSocialLink,
   SOCIAL_PLATFORMS,
   generateAutoSyncedLinks,
-  getSocialIcon,
-  SOCIAL_PLATFORM_COLORS,
+  getPlatformLogo,
 } from "../utils/socialUtils";
 import { SuccessAnimation } from "./SuccessAnimation";
-import { ConfettiSideCannons } from "./ConfettiSideCannons";
+// import { ConfettiSideCannons } from "./ConfettiSideCannons";
 import type { Database } from "../lib/supabase";
 
 type BusinessCard = Database["public"]["Tables"]["business_cards"]["Row"];
@@ -910,17 +909,12 @@ export const CardEditor: React.FC<CardEditorProps> = ({
               className="flex items-center justify-between p-2 lg:p-4 bg-white border border-gray-200 rounded-lg"
             >
               <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{
-                    backgroundColor:
-                      SOCIAL_PLATFORM_COLORS[link.platform] || "#3B82F6",
-                  }}
-                >
-                  {React.createElement(getSocialIcon(link.platform), {
-                    className: "w-5 h-5",
-                    style: { color: "#fff" }, // white icon for contrast
-                  })}
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100">
+                  <img
+                    src={getPlatformLogo(link.platform, link.url)}
+                    alt={`${link.platform} logo`}
+                    className="w-6 h-6"
+                  />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -1214,7 +1208,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
       {/* Success Animation Overlay */}
       {showSuccessAnimation && <SuccessAnimation />}
       {/* Confetti Side Cannons Animation */}
-      <ConfettiSideCannons trigger={showConfettiCannons} />
+      {/* <ConfettiSideCannons trigger={showConfettiCannons} /> */}
 
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1309,7 +1303,6 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                 )} */}
               </div>
 
-              {/* Actions */}
               {/* Actions */}
               <div className="border-t border-gray-200 p-4 flex justify-between">
                 <button

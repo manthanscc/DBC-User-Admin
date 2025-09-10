@@ -1,72 +1,6 @@
 /**
- * Map platform names to brand colors for icons
- */
-export const SOCIAL_PLATFORM_COLORS: Record<string, string> = {
-  Instagram: "#E1306C",      // Official Instagram pink
-  GitHub: "#24292f",         // GitHub dark
-  LinkedIn: "#0A66C2",       // LinkedIn blue
-  Twitter: "#1DA1F2",        // Twitter blue
-  YouTube: "#FF0000",        // YouTube red
-  Facebook: "#1877F2",       // Facebook blue
-  Pinterest: "#E60023",      // Pinterest red
-  Telegram: "#229ED9",       // Telegram blue
-  Snapchat: "#FFFC00",       // Snapchat yellow
-  TikTok: "#010101",         // TikTok black (use icon with accent for best effect)
-  WhatsApp: "#25D366",       // WhatsApp green
-  Discord: "#5865F2",        // Discord blurple
-  "Custom Link": "#6366F1",  // Indigo (Tailwind indigo-500)
-};
-
-/**
  * Social platform configuration and utilities
  */
-
-// Import react-icons for social platforms
-import {
-  FaInstagram,
-  FaFacebookF,
-  FaLinkedinIn,
-  FaYoutube,
-  FaGithub,
-  FaTwitter,
-  FaPinterest,
-  FaTelegramPlane,
-  FaSnapchatGhost,
-  FaTiktok,
-  FaGlobe,
-  FaExternalLinkAlt,
-  FaWhatsapp,
-  FaDiscord
-} from "react-icons/fa";
-import { 
-  
- } from "react-icons";
-
-/**
- * Map platform names to icon components
- */
-export const SOCIAL_PLATFORM_ICONS: Record<string, IconType> = {
-  Instagram: FaInstagram,
-  GitHub: FaGithub,
-  LinkedIn: FaLinkedinIn,
-  Twitter: FaTwitter,
-  YouTube: FaYoutube,
-  Facebook: FaFacebookF,
-  Pinterest: FaPinterest,
-  Telegram: FaTelegramPlane,
-  Snapchat: FaSnapchatGhost,
-  TikTok: FaTiktok,
-  WhatsApp: FaWhatsapp,
-  Discord: FaDiscord,
-  "Custom Link": FaExternalLinkAlt,
-};
-
-/**
- * Get the icon component for a social platform
- */
-export function getSocialIcon(platform: string): IconType {
-  return SOCIAL_PLATFORM_ICONS[platform] || FaGlobe;
-}
 
 export interface SocialPlatform {
   name: string;
@@ -188,6 +122,27 @@ export function extractUsernameFromUrl(platform: string, url: string): string {
 }
 
 /**
+ * Get favicon/logo for a platform or custom link
+ */
+export function getPlatformLogo(platform: string, url?: string): string {
+  if (platform !== "Custom Link" && SOCIAL_PLATFORMS[platform]) {
+    const baseUrl = SOCIAL_PLATFORMS[platform].baseUrl;
+    return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(baseUrl).hostname}`;
+  }
+
+  if (url) {
+    try {
+      const domain = new URL(url).hostname;
+      return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+    } catch {
+      return "https://www.google.com/s2/favicons?sz=64&domain=example.com";
+    }
+  }
+
+  return "https://www.google.com/s2/favicons?sz=64&domain=example.com";
+}
+
+/**
  * Get all auto-syncable platforms (excludes WhatsApp, Discord, Custom Link)
  */
 export function getAutoSyncablePlatforms(): string[] {
@@ -230,7 +185,10 @@ export function canAutoSync(platform: string): boolean {
 /**
  * Get platform display name with auto-sync indicator
  */
-export function getPlatformDisplayName(platform: string, isAutoSynced: boolean = false): string {
+export function getPlatformDisplayName(
+  platform: string,
+  isAutoSynced: boolean = false
+): string {
   const baseName = SOCIAL_PLATFORMS[platform]?.name || platform;
   return isAutoSynced ? `${baseName} (Auto-synced)` : baseName;
 }
