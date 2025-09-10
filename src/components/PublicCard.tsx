@@ -46,6 +46,24 @@ interface MediaItem {
   thumbnail_url?: string;
 }
 
+interface ProductService {
+  id: string;
+  title: string;
+  description: string;
+  price?: string;
+  category?: string;
+  is_featured: boolean;
+  is_active: boolean;
+  images: any[];
+  inquiries: Array<{
+    id: string;
+    inquiry_type: 'link' | 'phone' | 'whatsapp' | 'email';
+    contact_value: string;
+    button_text: string;
+    is_active: boolean;
+  }>;
+}
+
 interface ReviewLink {
   id: string;
   title: string;
@@ -73,6 +91,7 @@ export const PublicCard: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [products, setProducts] = useState<ProductService[]>([]);
   const [reviewLinks, setReviewLinks] = useState<ReviewLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +206,44 @@ export const PublicCard: React.FC = () => {
           })
         );
         setReviewLinks(formattedReviews);
+      }
+
+      // Load products/services
+      const { data: productsData, error: productsError } = await supabase
+        .from("products_services")
+        .select("*")
+        .eq("card_id", cardData.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (productsError) {
+        console.error("Products error:", productsError);
+      } else {
+        // Load image links and inquiries for each product
+        const productsWithDetails = await Promise.all(
+          (productsData || []).map(async (product) => {
+            // Load image links
+            const { data: imagesData } = await supabase
+              .from('product_image_links')
+              .select('*')
+              .eq('product_id', product.id)
+              .order('display_order', { ascending: true });
+
+            // Load inquiries
+            const { data: inquiriesData } = await supabase
+              .from('product_inquiries')
+              .select('*')
+              .eq('product_id', product.id)
+              .eq('is_active', true);
+
+            return {
+              ...product,
+              images: imagesData || [],
+              inquiries: inquiriesData || []
+            };
+          })
+        );
+        setProducts(productsWithDetails);
       }
 
       // Track view (increment view count)
@@ -312,6 +369,50 @@ export const PublicCard: React.FC = () => {
       return `https://player.vimeo.com/video/${videoId}`;
     }
     return url;
+  };
+
+  const renderFormattedText = (text: string) => {
+    return text;
+  };
+
+  const renderProductDescription = (text: string, alignment: string = 'left') => {
+    const alignmentClass = alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left';
+    
+    return (
+      <div className={`${alignmentClass} whitespace-pre-wrap leading-relaxed text-sm`}>
+        {text.split('\n').map((line, index) => {
+          // Handle bullet points
+          if (line.trim().startsWith('• ')) {
+            return (
+              <div key={index} className="flex items-start gap-2 mb-2">
+                <span className="text-blue-600 font-bold mt-0.5 flex-shrink-0">•</span>
+                <span 
+                  className="flex-1"
+                  dangerouslySetInnerHTML={{ 
+                    __html: line.replace('• ', '')
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
+                  }} 
+                />
+              </div>
+            );
+          }
+          
+          // Handle regular lines
+          return (
+            <div key={index} className={line.trim() === '' ? 'mb-3' : 'mb-1'}>
+              {line.trim() !== '' && (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: line
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
+                }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const renderStars = (rating: number) => {
@@ -688,6 +789,104 @@ export const PublicCard: React.FC = () => {
 
             {/* Content Section */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Products/Services */}
+              {products.length > 0 && (
+                <div
+                  ref={cardRef}
+                  className={`w-full p-6 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                  style={{
+                    backgroundColor: theme.background,
+                    color: theme.text,
+                    fontFamily: `'${layout.font}', sans-serif`,
+                    borderColor: theme.primary + "50",
+                  }}
+                >
+                  <h3
+                    className="text-xl font-semibold mb-4 flex items-center gap-2"
+                    style={{ color: theme.text }}
+                  >
+                    <Star className="w-5 h-5 text-yellow-600" />
+                    Products & Services
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {products.map((product) => (
+                      <div key={product.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                        {/* Product Images */}
+                        {product.images && product.images.length > 0 && (
+                          <div className="mb-4">
+                            <div className="grid grid-cols-2 gap-2">
+                              {product.images.slice(0, 4).map((image, idx) => (
+                                <div key={idx} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                                  <img
+                                    src={image.image_url}
+                                    alt={image.alt_text || `Product image ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4=';
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            {product.images.length > 4 && (
+                              <p className="text-xs text-gray-500 mt-2 text-center">
+                                +{product.images.length - 4} more images
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-bold text-lg text-gray-900 mb-2">{product.title}</h4>
+                            {product.price && (
+                              <p className="text-green-600 font-bold text-base mb-2">{product.price}</p>
+                            )}
+                            {product.category && (
+                              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium">
+                                {product.category}
+                              </span>
+                            )}
+                          </div>
+                          {product.is_featured && (
+                            <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                          )}
+                        </div>
+                        {/* Enhanced Description Display */}
+                        <div className="mb-6" style={{ color: theme.text }}>
+                          {renderProductDescription(product.description, product.text_alignment)}
+                        </div>
+                        {product.inquiries.length > 0 && (
+                          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
+                            {product.inquiries.map((inquiry) => (
+                              <a
+                                key={inquiry.id}
+                                href={
+                                  inquiry.inquiry_type === 'phone' ? `tel:${inquiry.contact_value}` :
+                                  inquiry.inquiry_type === 'whatsapp' ? `https://wa.me/${inquiry.contact_value.replace(/[^0-9]/g, '')}` :
+                                  inquiry.inquiry_type === 'email' ? `mailto:${inquiry.contact_value}` :
+                                  inquiry.contact_value
+                                }
+                                target={inquiry.inquiry_type === 'link' ? '_blank' : undefined}
+                                rel={inquiry.inquiry_type === 'link' ? 'noopener noreferrer' : undefined}
+                                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-lg hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-md"
+                                style={{ backgroundColor: theme.primary }}
+                              >
+                                {inquiry.inquiry_type === 'link' && <ExternalLink className="w-4 h-4" />}
+                                {inquiry.inquiry_type === 'phone' && <Phone className="w-4 h-4" />}
+                                {inquiry.inquiry_type === 'whatsapp' && <MessageCircle className="w-4 h-4" />}
+                                {inquiry.inquiry_type === 'email' && <Mail className="w-4 h-4" />}
+                                {inquiry.button_text}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Contact Actions */}
               <div
                 ref={cardRef}
