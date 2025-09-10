@@ -1,4 +1,28 @@
 import React, { useState } from "react";
+
+// Custom Keyframes for animated gradient and rings
+if (typeof document !== 'undefined' && !document.getElementById('reviewscard-animations')) {
+  const style = document.createElement('style');
+  style.id = 'reviewscard-animations';
+  style.innerHTML = `
+    @keyframes gradient-move {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .animate-gradient-move {
+      background-size: 200% 200%;
+      animation: gradient-move 8s ease-in-out infinite;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 4s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+  `;
+  document.head.appendChild(style);
+}
 import {
   Star,
   ArrowRight,
@@ -32,8 +56,22 @@ function Reviewscard() {
   ];
 
   return (
-    <div className="flex ">
-      <div className="bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 rounded-3xl shadow-2xl p-3 sm:p-4 md:p-8 max-w-4xl w-full transform transition-all duration-300 flex flex-col lg:flex-row gap-4 lg:gap-8">
+    <div className="relative  flex items-center justify-center overflow-hidden">
+      {/* Animated Gradient Background */}
+    
+      {/* Animated Rings */}
+      
+      <div className="relative z-10 bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 rounded-3xl shadow-2xl p-3 sm:p-4 md:p-8 max-w-4xl w-full transform transition-all duration-300 flex flex-col lg:flex-row gap-4 lg:gap-8">
+        <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-[-200px] top-[-200px] w-[600px] h-[600px] border-8 border-blue-400/20 rounded-full animate-pulse-slow"></div>
+        <div className="absolute left-[-200px] top-[-200px] w-[500px] h-[500px] border-8 border-pink-400/20 rounded-full animate-pulse-slow"></div>
+        <div className="absolute left-[-200px] top-[-200px] w-[400px] h-[400px] border-8 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
+        <div className="absolute left-[-200px] top-[-200px] w-[300px] h-[300px] border-8 border-orange-400/20 rounded-full animate-pulse-slow"></div>
+
+        <div className="absolute right-[-50px] bottom-[-80px] w-[400px] h-[400px] border-8 border-purple-400/20 rounded-full animate-pulse-slow"></div>
+        <div className="absolute left-[60%] top-[50%] w-[300px] h-[300px] border-4 border-pink-400/20 rounded-full animate-pulse-slow"></div>
+        <div className="absolute left-[67%] top-[60%] w-[200px] h-[200px] border-4 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
+      </div>
         {/* Left Column */}
         <div className="flex-1 flex flex-col justify-between mb-4 lg:mb-0">
           {/* Header */}
@@ -268,7 +306,7 @@ function Reviewscard() {
           </div>
         </div>
       </div>
-    </div>
+  </div>
   );
 }
 

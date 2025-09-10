@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, X, ExternalLink, Star, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import Reviewscard from '../reviewcard/Reviewscard';
+import Reviewscard from "../reviewcard/Reviewscard";
 
 interface Review {
   id: string;
@@ -304,23 +304,21 @@ export const ReviewsManager: React.FC<ReviewsManagerProps> = ({
         </div>
       ) : (
         <div className="text-center py-0">
-          
-            {/* Remove the old Star and add Reviewscard */}
-            {/* <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
-            <div className="justify-center">
-              {/* Import Reviewscard at the top: import Reviewscard from '../reviewcard/Reviewscard'; */}
-              <Reviewscard />
-            </div>
-        
+          {/* Remove the old Star and add Reviewscard */}
+          {/* <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
+          <div className="justify-center">
+            <Reviewscard />
+          </div>
         </div>
       )}
 
       {/* Review Count Info */}
       {reviews.length > 0 && (
         <div className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 mb-2">
             {reviews.length} review link{reviews.length !== 1 ? "s" : ""} added
           </p>
+          <Reviewscard />
         </div>
       )}
     </div>
