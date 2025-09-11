@@ -70,10 +70,11 @@ function Reviewscard() {
           <div className="absolute left-[-200px] top-[-200px] w-[500px] h-[500px] border-8 border-pink-400/20 rounded-full animate-pulse-slow"></div>
           <div className="absolute left-[-200px] top-[-200px] w-[400px] h-[400px] border-8 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
           <div className="absolute left-[-200px] top-[-200px] w-[300px] h-[300px] border-8 border-orange-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute right-[-50px] bottom-[-200px] w-[500px] h-[450px] border-8 border-pink-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute right-[0px] bottom-[-200px] w-[400px] h-[400px] border-8 border-purple-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute right-[50px] bottom-[-200px] w-[300px] h-[350px] border-8 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute right-[100px] bottom-[-200px] w-[200px] h-[300px] border-8 border-orange-400/20 rounded-full animate-pulse-slow"></div>
 
-          <div className="absolute right-[-10px] bottom-[-80px] w-[400px] h-[400px] border-8 border-purple-400/20 rounded-full animate-pulse-slow"></div>
-          <div className="absolute left-[60%] top-[50%] w-[300px] h-[300px] border-4 border-pink-400/20 rounded-full animate-pulse-slow"></div>
-          <div className="absolute left-[67%] top-[60%] w-[200px] h-[200px] border-4 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
         </div>
         {/* Left Column */}
         <div className="flex-1 flex flex-col justify-between mb-4 lg:mb-0">
