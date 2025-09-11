@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 
 // Custom Keyframes for animated gradient and rings
-if (typeof document !== 'undefined' && !document.getElementById('reviewscard-animations')) {
-  const style = document.createElement('style');
-  style.id = 'reviewscard-animations';
+if (
+  typeof document !== "undefined" &&
+  !document.getElementById("reviewscard-animations")
+) {
+  const style = document.createElement("style");
+  style.id = "reviewscard-animations";
   style.innerHTML = `
     @keyframes gradient-move {
       0%, 100% { background-position: 0% 50%; }
@@ -58,20 +61,20 @@ function Reviewscard() {
   return (
     <div className="relative  flex items-center justify-center overflow-hidden">
       {/* Animated Gradient Background */}
-    
+
       {/* Animated Rings */}
-      
+
       <div className="relative z-10 bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 rounded-3xl shadow-2xl p-3 sm:p-4 md:p-8 max-w-4xl w-full transform transition-all duration-300 flex flex-col lg:flex-row gap-4 lg:gap-8">
         <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute left-[-200px] top-[-200px] w-[600px] h-[600px] border-8 border-blue-400/20 rounded-full animate-pulse-slow"></div>
-        <div className="absolute left-[-200px] top-[-200px] w-[500px] h-[500px] border-8 border-pink-400/20 rounded-full animate-pulse-slow"></div>
-        <div className="absolute left-[-200px] top-[-200px] w-[400px] h-[400px] border-8 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
-        <div className="absolute left-[-200px] top-[-200px] w-[300px] h-[300px] border-8 border-orange-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[-200px] top-[-200px] w-[600px] h-[600px] border-8 border-blue-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[-200px] top-[-200px] w-[500px] h-[500px] border-8 border-pink-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[-200px] top-[-200px] w-[400px] h-[400px] border-8 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[-200px] top-[-200px] w-[300px] h-[300px] border-8 border-orange-400/20 rounded-full animate-pulse-slow"></div>
 
-        <div className="absolute right-[-50px] bottom-[-80px] w-[400px] h-[400px] border-8 border-purple-400/20 rounded-full animate-pulse-slow"></div>
-        <div className="absolute left-[60%] top-[50%] w-[300px] h-[300px] border-4 border-pink-400/20 rounded-full animate-pulse-slow"></div>
-        <div className="absolute left-[67%] top-[60%] w-[200px] h-[200px] border-4 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
-      </div>
+          <div className="absolute right-[-10px] bottom-[-80px] w-[400px] h-[400px] border-8 border-purple-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[60%] top-[50%] w-[300px] h-[300px] border-4 border-pink-400/20 rounded-full animate-pulse-slow"></div>
+          <div className="absolute left-[67%] top-[60%] w-[200px] h-[200px] border-4 border-yellow-400/20 rounded-full animate-pulse-slow"></div>
+        </div>
         {/* Left Column */}
         <div className="flex-1 flex flex-col justify-between mb-4 lg:mb-0">
           {/* Header */}
@@ -166,22 +169,28 @@ function Reviewscard() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-2 sm:gap-4 border-t border-indigo-700 mb-2 sm:mb-4 p-2 sm:p-3">
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-purple-300">3x</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-300">
+                3x
+              </div>
               <div className="text-xs text-indigo-200">More Reviews</div>
             </div>
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-blue-300">85%</div>
+              <div className="text-lg sm:text-2xl font-bold text-blue-300">
+                85%
+              </div>
               <div className="text-xs text-indigo-200">Response Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-lg sm:text-2xl font-bold text-green-300">24/7</div>
+              <div className="text-lg sm:text-2xl font-bold text-green-300">
+                24/7
+              </div>
               <div className="text-xs text-indigo-200">AI Support</div>
             </div>
           </div>
         </div>
         {/* Right Column */}
         <div className="flex-1 flex flex-col justify-between">
-          <div className="relative mb-6 mt-3 sm:mb-10">
+          <div className="relative mb-0 mt-0 sm:mb-0">
             <div className="relative bg-blue-200 rounded-2xl shadow-2xl p-1 transform rotate-3 hover:rotate-0 transition-transform duration-500">
               <div className="flex gap-2 absolute left-4 top-5 z-30">
                 <span className="w-3 h-3 rounded-full bg-red-500"></span>
@@ -209,13 +218,13 @@ function Reviewscard() {
                   ))}
                 </div>
 
-                <div className="bg-white rounded-lg p-2 mb-3 sm:mb-4 border-l-4 border-blue-500">
+                <div className="bg-white rounded-lg p-2 mb-1 sm:mb-1 border-l-4 border-blue-500">
                   <p className="text-gray-700 text-xs italic">
                     "Amazing service! The staff was incredibly helpful and the
                     food was delicious. Highly recommend this restaurant to
                     anyone looking for great dining experience!"
                   </p>
-                  <div className="flex justify-end">
+                  <div className="flex justify-start">
                     <button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs py-1 px-2 sm:px-3 rounded-xl">
                       Copy & Paste
                     </button>
@@ -224,14 +233,14 @@ function Reviewscard() {
               </div>
             </div>
             {/* Floating Elements */}
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-5 sm:-right-5 bg-yellow-400 text-yellow-900 px-3 sm:px-4 py-1 rounded-full text-xs font-semibold animate-bounce">
+            <div className="absolute -bottom-3 -left-3 sm:-bottom-4 sm:-left-8 bg-yellow-400 text-yellow-900 px-3 sm:px-4 py-1 rounded-full text-xs font-semibold animate-bounce">
               🚀 +300% Reviews
             </div>
           </div>
-          {/* CTA Buttons */}
-          <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+          <div className="flex -mt-6 mb-4 gap-0 items-end justify-between">
+            <div className="flex-1">
             <button
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2 sm:py-3 px-3 sm:px-6 rounded-xl hover:from-purple-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center group text-sm sm:text-base"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2 sm:py-3 px-6 sm:px-10 rounded-xl hover:from-purple-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center group text-xs sm:text-xs border-2 border-border-white"
               onClick={() =>
                 window.open(
                   "https://review.sccinfotech.com/scc-infotech-llp",
@@ -242,13 +251,31 @@ function Reviewscard() {
               Get Free Demo
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
+            </div>
+
+            <div className="bg-purple-200 border-2 border-purple-500 rounded-xl shadow-2xl p-2 transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+              <p className="text-gray-700 text-xs italic mb-1">
+                    Scan QR Code
+                  </p>
+              <div className="w-[110px] bg-gray-200 rounded-xl  ">
+                
+                <div className="bg-white rounded-lg border-r-4 p-1 border-blue-500">
+                  <img
+                    src="https://github.com/yash131120/DBC_____logo/blob/main/sccqr.png?raw=true"
+                    alt="SCC QR Code"
+                    className="w-26 h-26 object-contain mx-auto"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
             <button
-              className="w-full border-2 border-purple-400 text-purple-200 font-semibold py-2 sm:py-3 px-3 sm:px-6 rounded-xl hover:bg-purple-700 transition-all duration-200 text-sm sm:text-base"
+              className="flex-1 border-2 border-purple-400 text-purple-200 font-semibold py-2 sm:py-3 px-3 sm:px-6 rounded-xl hover:bg-purple-700 transition-all duration-200 text-xs sm:text-xs"
               onClick={() =>
-                window.open(
-                  "https://review.sccinfotech.com",
-                  "_blank"
-                )
+                window.open("https://review.sccinfotech.com", "_blank")
               }
             >
               Visit: review.sccinfotech.com
@@ -306,7 +333,7 @@ function Reviewscard() {
           </div>
         </div>
       </div>
-  </div>
+    </div>
   );
 }
 
