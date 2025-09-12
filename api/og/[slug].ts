@@ -17,62 +17,71 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // Fetch card data
-  const { data: card, error: cardError } = await supabase
-    .from('business_cards')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
+    // Fetch card data
+    const { data: card, error: cardError } = await supabase
+      .from('business_cards')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single();
 
-  if (cardError || !card) {
-    // Fallback OG tags
+    // Debug info
+    let debug = '';
+    debug += `<pre>ENV: SUPABASE_URL=${process.env.SUPABASE_URL ? 'set' : 'missing'} SUPABASE_ANON_KEY=${process.env.SUPABASE_ANON_KEY ? 'set' : 'missing'}</pre>`;
+    debug += `<pre>slug: ${slug}</pre>`;
+    debug += `<pre>cardError: ${JSON.stringify(cardError)}</pre>`;
+    debug += `<pre>card: ${JSON.stringify(card)}</pre>`;
+
+    if (cardError || !card) {
+      // Fallback OG tags with debug
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).send(`<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta property="og:title" content="Digital Business Card Builder" />
+    <meta property="og:description" content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform." />
+    <meta property="og:image" content="https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true" />
+    <meta property="og:url" content="https://businesscardscc.vercel.app/c/${slug}" />
+    <meta property="og:type" content="website" />
+    <meta http-equiv="refresh" content="0; url=/c/${slug}" />
+  </head>
+  <body>${debug}</body>
+  </html>`);
+      return;
+    }
+
+    // Fetch profile data
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', card.user_id)
+      .single();
+    debug += `<pre>profileError: ${JSON.stringify(profileError)}</pre>`;
+    debug += `<pre>profile: ${JSON.stringify(profile)}</pre>`;
+
+    // Compose OG data
+    const ogTitle = `${profile?.name || card.title || 'Business Card'}${card.company ? ' - ' + card.company : ''}`;
+    const ogDescription = card.bio || profile?.bio || card.position || 'View my digital business card!';
+    const ogImage = card.avatar_url || profile?.avatar_url || 'https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true';
+    const ogUrl = `https://businesscardscc.vercel.app/c/${slug}`;
+
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta property="og:title" content="Digital Business Card Builder" />
-  <meta property="og:description" content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform." />
-  <meta property="og:image" content="https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true" />
-  <meta property="og:url" content="https://businesscardscc.vercel.app/c/${slug}" />
-  <meta property="og:type" content="website" />
-  <meta http-equiv="refresh" content="0; url=/c/${slug}" />
-</head>
-<body></body>
-</html>`);
-    return;
-  }
-
-  // Fetch profile data
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', card.user_id)
-    .single();
-
-  // Compose OG data
-  const ogTitle = `${profile?.name || card.title || 'Business Card'}${card.company ? ' - ' + card.company : ''}`;
-  const ogDescription = card.bio || profile?.bio || card.position || 'View my digital business card!';
-  const ogImage = card.avatar_url || profile?.avatar_url || 'https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true';
-  const ogUrl = `https://businesscardscc.vercel.app/c/${slug}`;
-
-  res.setHeader('Content-Type', 'text/html');
-  res.status(200).send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta property="og:title" content="${escapeHtml(ogTitle)}" />
-  <meta property="og:description" content="${escapeHtml(ogDescription)}" />
-  <meta property="og:image" content="${ogImage}" />
-  <meta property="og:url" content="${ogUrl}" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${escapeHtml(ogTitle)}" />
-  <meta name="twitter:description" content="${escapeHtml(ogDescription)}" />
-  <meta name="twitter:image" content="${ogImage}" />
-  <meta http-equiv="refresh" content="0; url=/c/${slug}" />
-</head>
-<body></body>
-</html>`);
+  <html lang="en">
+  <head>
+    <meta property="og:title" content="${escapeHtml(ogTitle)}" />
+    <meta property="og:description" content="${escapeHtml(ogDescription)}" />
+    <meta property="og:image" content="${ogImage}" />
+    <meta property="og:url" content="${ogUrl}" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(ogTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(ogDescription)}" />
+    <meta name="twitter:image" content="${ogImage}" />
+    <meta http-equiv="refresh" content="0; url=/c/${slug}" />
+  </head>
+  <body>${debug}</body>
+  </html>`);
 }
 
 function escapeHtml(str: string) {
