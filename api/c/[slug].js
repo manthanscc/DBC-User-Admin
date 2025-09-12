@@ -9,7 +9,7 @@ const defaultMeta = {
   description:
     "Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes.",
   image:
-    "https://businesscardsscc.vercel.app/DBCLOGO_2.png",
+    "/DBCLOGO_2.png",
   url: "https://dbc.sccinfotech.com",
   author: "SCC Infotech LLP",
 };
@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
         <!-- Fallbacks -->
         <meta name="robots" content="index, follow" />
         <meta name="language" content="English" />
-        <link rel="icon" type="image/svg+xml" href="https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true" />
+  <link rel="icon" type="image/png" href="/DBCLOGO_2.png" />
       </head>
       <body>
         <div id="root"></div>
