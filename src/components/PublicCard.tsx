@@ -1,92 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+// Clean merged PublicCard component (design from p.tsx + original meta & analytics logic)
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import {
   Mail,
   Phone,
   Globe,
-  Instagram,
-  Linkedin,
-  Github,
-  Twitter,
-  Facebook,
-  Youtube,
   Camera,
   MessageCircle,
-  MapPin,
   Star,
   ExternalLink,
   Play,
-  FileText,
   Eye,
-  Image as ImageIcon,
-  Download,
   Share2,
+  Download,
   QrCode,
-  User,
-  Building,
-  Briefcase,
-  Heart
-} from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import type { Database } from '../lib/supabase';
+  ArrowLeft,
+  FileText,
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
+import type { Database } from "../lib/supabase";
+import { QRCodeSVG } from "qrcode.react";
+import html2canvas from "html2canvas";
+import { getPlatformLogo } from "../utils/socialUtils";
 
-type BusinessCard = Database['public']['Tables']['business_cards']['Row'];
-type SocialLink = Database['public']['Tables']['social_links']['Row'];
-
+// ---- Types ----
+type BusinessCard = Database["public"]["Tables"]["business_cards"]["Row"];
+type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
 interface MediaItem {
   id: string;
-  type: 'image' | 'video' | 'document';
+  type: "image" | "video" | "document";
   url: string;
   title: string;
   description?: string;
   thumbnail_url?: string;
 }
-
+interface ProductImage {
+  id: string;
+  image_url: string;
+  alt_text?: string | null;
+  display_order?: number | null;
+}
+interface ProductInquiry {
+  id: string;
+  inquiry_type: "link" | "phone" | "whatsapp" | "email";
+  contact_value: string;
+  button_text: string;
+  is_active: boolean;
+}
 interface ProductService {
   id: string;
   title: string;
   description: string;
   price?: string;
   category?: string;
-  text_alignment: 'left' | 'center' | 'right';
+  text_alignment?: "left" | "center" | "right";
   is_featured: boolean;
   is_active: boolean;
-  images: Array<{
-    id: string;
-    image_url: string;
-    alt_text?: string;
-    display_order: number;
-    is_active: boolean;
-  }>;
-  inquiries: Array<{
-    id: string;
-    inquiry_type: 'link' | 'phone' | 'whatsapp' | 'email';
-    contact_value: string;
-    button_text: string;
-    is_active: boolean;
-  }>;
+  images: ProductImage[];
+  inquiries: ProductInquiry[];
 }
-
 interface ReviewLink {
   id: string;
   title: string;
   review_url: string;
   created_at: string;
 }
-
-const SOCIAL_ICONS: Record<string, React.ComponentType<any>> = {
-  Instagram,
-  LinkedIn: Linkedin,
-  GitHub: Github,
-  Twitter,
-  Facebook,
-  'You Tube': Youtube,
-  YouTube: Youtube,
-  Website: Globe,
-  WhatsApp: MessageCircle,
-  Telegram: MessageCircle,
-  'Custom Link': ExternalLink,
-};
 
 export const PublicCard: React.FC = () => {
   const { cardId } = useParams<{ cardId: string }>();
@@ -98,406 +76,399 @@ export const PublicCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showQR, setShowQR] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [descExpanded, setDescExpanded] = useState<Record<string, boolean>>({});
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (cardId) {
-      loadCard();
-    }
-  }, [cardId]);
+  // ---- Callbacks & Effects ----
 
-  // Update meta tags when card data is loaded
-  useEffect(() => {
-    if (card) {
-      updateMetaTags();
-      trackView();
+  // ---- Meta & Analytics ----
+  const updateMetaTags = useCallback((): void => {
+    if (!card) return;
+    const meta = {
+      name: card.title || "Digital Business Card",
+      company: card.company || "",
+      profession: card.position || "",
+      bio: card.bio || "",
+      avatar:
+        card.avatar_url ||
+        "https://github.com/yash131120/DBC_____logo/blob/main/logo.png?raw=true",
+    };
+    if (
+      typeof window !== "undefined" &&
+      (window as unknown as { updateCardMetaTags?: (m: typeof meta) => void })
+        .updateCardMetaTags
+    ) {
+      (
+        window as unknown as { updateCardMetaTags?: (m: typeof meta) => void }
+      ).updateCardMetaTags?.(meta);
     }
   }, [card]);
+  const trackView = useCallback(
+    async (id: string): Promise<void> => {
+      try {
+        await supabase
+          .from("business_cards")
+          .update({ view_count: card ? (card.view_count || 0) + 1 : 1 })
+          .eq("id", id);
+        await supabase.from("card_analytics").insert({
+          card_id: id,
+          visitor_ip: null,
+          user_agent: navigator.userAgent,
+          referrer: document.referrer || null,
+          device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent)
+            ? "mobile"
+            : "desktop",
+        });
+      } catch (e) {
+        console.error("Track view error", e);
+      }
+    },
+    [card]
+  );
 
-  const updateMetaTags = () => {
-    if (!card) return;
-
-    const cardData = {
-      name: card.title || 'Digital Business Card',
-      company: card.company || '',
-      profession: card.position || '',
-      bio: card.bio || '',
-      avatar: card.avatar_url || 'https://github.com/yash131120/DBC_____logo/blob/main/logo.png?raw=true'
-    };
-
-    // Call the global function defined in index.html
-    if (typeof window !== 'undefined' && (window as any).updateCardMetaTags) {
-      (window as any).updateCardMetaTags(cardData);
-    }
-  };
-
-  const loadCard = async () => {
+  // ---- Data Load ----
+  const loadCard = useCallback(async (): Promise<void> => {
     if (!cardId) return;
-
     try {
       setLoading(true);
       setError(null);
-
-      // Load card data
       const { data: cardData, error: cardError } = await supabase
-        .from('business_cards')
-        .select('*')
-        .eq('slug', cardId)
-        .eq('is_published', true)
+        .from("business_cards")
+        .select("*")
+        .eq("slug", cardId)
+        .eq("is_published", true)
         .single();
-
-      if (cardError) {
-        if (cardError.code === 'PGRST116') {
-          setError('Card not found or not published');
-        } else {
-          setError('Failed to load card');
-        }
+      if (cardError || !cardData) {
+        setError("Card not found or not published");
         return;
       }
-
       setCard(cardData);
-
-      // Load social links
       const { data: socialData } = await supabase
-        .from('social_links')
-        .select('*')
-        .eq('card_id', cardData.id)
-        .eq('is_active', true)
-        .order('display_order');
-
+        .from("social_links")
+        .select("*")
+        .eq("card_id", cardData.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
       setSocialLinks(socialData || []);
-
-      // Load media items
       const { data: mediaData } = await supabase
-        .from('media_items')
-        .select('*')
-        .eq('card_id', cardData.id)
-        .eq('is_active', true)
-        .order('display_order');
-
-      const formattedMedia: MediaItem[] = (mediaData || []).map(item => ({
-        id: item.id,
-        type: item.type as 'image' | 'video' | 'document',
-        url: item.url,
-        title: item.title,
-        description: item.description || undefined,
-        thumbnail_url: item.thumbnail_url || undefined
-      }));
-
-      setMediaItems(formattedMedia);
-
-      // Load products/services
+        .from("media_items")
+        .select("*")
+        .eq("card_id", cardData.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+      setMediaItems(
+        (mediaData || []).map((m) => ({
+          id: m.id,
+          type: m.type as MediaItem["type"],
+          url: m.url,
+          title: m.title,
+          description: m.description || undefined,
+          thumbnail_url: m.thumbnail_url || undefined,
+        }))
+      );
+      const { data: reviewData } = await supabase
+        .from("review_links")
+        .select("*")
+        .eq("card_id", cardData.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      setReviewLinks(
+        (reviewData || []).map((r) => ({
+          id: r.id,
+          title: r.title,
+          review_url: r.review_url,
+          created_at: r.created_at,
+        }))
+      );
       const { data: productsData } = await supabase
-        .from('products_services')
-        .select('*')
-        .eq('card_id', cardData.id)
-        .eq('is_active', true)
-        .order('display_order');
-
+        .from("products_services")
+        .select("*")
+        .eq("card_id", cardData.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
       if (productsData) {
-        const productsWithDetails = await Promise.all(
-          productsData.map(async (product) => {
-            // Load image links
-            const { data: imagesData } = await supabase
-              .from('product_image_links')
-              .select('*')
-              .eq('product_id', product.id)
-              .eq('is_active', true)
-              .order('display_order');
-
-            // Load inquiries
-            const { data: inquiriesData } = await supabase
-              .from('product_inquiries')
-              .select('*')
-              .eq('product_id', product.id)
-              .eq('is_active', true);
-
+        const detailed: ProductService[] = await Promise.all(
+          productsData.map(async (p: Record<string, any>) => {
+            const { data: images } = await supabase
+              .from("product_image_links")
+              .select("*")
+              .eq("product_id", p.id)
+              .order("display_order", { ascending: true });
+            const { data: inquiries } = await supabase
+              .from("product_inquiries")
+              .select("*")
+              .eq("product_id", p.id)
+              .eq("is_active", true);
             return {
-              ...product,
-              images: imagesData || [],
-              inquiries: inquiriesData || []
+              id: p.id,
+              title: p.title,
+              description: p.description,
+              price: p.price || undefined,
+              category: p.category || undefined,
+              text_alignment: p.text_alignment || undefined,
+              is_featured: p.is_featured,
+              is_active: p.is_active,
+              images: (images || []).map((img) => ({
+                id: img.id,
+                image_url: img.image_url,
+                alt_text: img.alt_text,
+                display_order: img.display_order,
+              })) as ProductImage[],
+              inquiries: (inquiries || []).map((q) => ({
+                id: q.id,
+                inquiry_type: q.inquiry_type,
+                contact_value: q.contact_value,
+                button_text: q.button_text,
+                is_active: q.is_active,
+              })) as ProductInquiry[],
             };
           })
         );
-
-        setProducts(productsWithDetails);
+        setProducts(detailed);
       }
-
-      // Load review links
-      const { data: reviewsData } = await supabase
-        .from('review_links')
-        .select('*')
-        .eq('card_id', cardData.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      const formattedReviews: ReviewLink[] = (reviewsData || []).map(item => ({
-        id: item.id,
-        title: item.title,
-        review_url: item.review_url,
-        created_at: item.created_at
-      }));
-
-      setReviewLinks(formattedReviews);
-
-    } catch (error) {
-      console.error('Error loading card:', error);
-      setError('Failed to load card');
+    } catch (e) {
+      console.error("Load card error", e);
+      setError("Failed to load card");
     } finally {
       setLoading(false);
     }
-  };
+  }, [cardId]);
 
-  const trackView = async () => {
-    if (!card) return;
+  // Effects after callbacks defined
+  useEffect(() => {
+    if (cardId) loadCard();
+  }, [cardId, loadCard]);
+  useEffect(() => {
+    if (card) {
+      updateMetaTags();
+      trackView(card.id);
+    }
+  }, [card, updateMetaTags, trackView]);
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight")
+        setGalleryIndex((p) => (p + 1) % galleryImages.length);
+      else if (e.key === "ArrowLeft")
+        setGalleryIndex(
+          (p) => (p - 1 + galleryImages.length) % galleryImages.length
+        );
+      else if (e.key === "Escape") setGalleryOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [galleryOpen, galleryImages.length]);
 
+  // ---- Helpers ----
+  const handleDownload = async () => {
+    const el = document.getElementById("public-card-content");
+    if (!el) return;
     try {
-      // Track view in analytics
-      await supabase.from('card_analytics').insert({
-        card_id: card.id,
-        visitor_ip: null, // Would be populated server-side in production
-        user_agent: navigator.userAgent,
-        referrer: document.referrer || null,
-        device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop'
+      const canvas = await html2canvas(el, {
+        backgroundColor: null,
+        useCORS: true,
+        scale: 2,
       });
-
-      // Increment view count
-      await supabase
-        .from('business_cards')
-        .update({ view_count: (card.view_count || 0) + 1 })
-        .eq('id', card.id);
-
-    } catch (error) {
-      console.error('Error tracking view:', error);
+      const link = document.createElement("a");
+      link.download = `${card?.slug || "business-card"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch {
+      alert("Failed to download card");
     }
   };
-
-  const getCardShapeClasses = () => {
-    switch (card?.shape) {
-      case 'rounded':
-        return 'rounded-3xl';
-      case 'circle':
-        return 'rounded-full aspect-square';
-      case 'hexagon':
-        return 'rounded-3xl';
-      default:
-        return 'rounded-2xl';
+  const getVideoThumbnail = (url: string) => {
+    if (url.includes("youtube.com/watch?v=")) {
+      const videoId = url.split("v=")[1]?.split("&")[0];
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     }
-  };
-
-  const getLayoutClasses = () => {
-    const layout = card?.layout as any;
-    const baseClasses = 'flex flex-col';
-    
-    switch (layout?.alignment) {
-      case 'left':
-        return `${baseClasses} items-start text-left`;
-      case 'right':
-        return `${baseClasses} items-end text-right`;
-      default:
-        return `${baseClasses} items-center text-center`;
+    if (url.includes("youtu.be/")) {
+      const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     }
+    return null;
   };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
-      />
-    ));
+  const copy = (t: string) =>
+    navigator.clipboard
+      .writeText(t)
+      .then(() => alert("Link copied!"))
+      .catch(() => alert("Copy failed"));
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${card?.title || "Business Card"} - ${
+            card?.company || "Professional"
+          }`,
+          text: `Check out ${card?.title || "this"}'s digital business card`,
+          url,
+        });
+      } catch {
+        copy(url);
+      }
+    } else copy(url);
   };
-
-  const renderFormattedText = (text: string, alignment: string = 'left') => {
-    const alignmentClass = alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left';
-    
+  const renderProductDescription = (text: string, align: string = "left") => {
+    const cls =
+      align === "center"
+        ? "text-center"
+        : align === "right"
+        ? "text-right"
+        : "text-left";
     return (
-      <div className={`${alignmentClass} whitespace-pre-wrap leading-relaxed`}>
-        {text.split('\n').map((line, index) => {
-          // Handle bullet points
-          if (line.trim().startsWith('• ')) {
+      <div className={`${cls} whitespace-pre-wrap leading-relaxed text-sm`}>
+        {text.split("\n").map((line, i) => {
+          const toHtml = (content: string) =>
+            content
+              .replace(
+                /\*\*(.*?)\*\*/g,
+                '<strong class="font-semibold text-gray-900">$1</strong>'
+              )
+              .replace(
+                /\*(.*?)\*/g,
+                '<em class="italic text-gray-700">$1</em>'
+              );
+          if (line.trim().startsWith("• ")) {
             return (
-              <div key={index} className="flex items-start gap-2 mb-1">
-                <span className="text-blue-600 font-bold mt-1">•</span>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: line.replace('• ', '')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
-                }} />
+              <div key={i} className="flex items-start gap-2 mb-2">
+                <span className="text-blue-600 font-bold mt-0.5 flex-shrink-0">
+                  •
+                </span>
+                <span
+                  className="flex-1"
+                  dangerouslySetInnerHTML={{
+                    __html: toHtml(line.replace("• ", "")),
+                  }}
+                />
               </div>
             );
           }
-          
-          // Handle regular lines
           return (
-            <div key={index} className={line.trim() === '' ? 'mb-2' : 'mb-1'}>
-              <span dangerouslySetInnerHTML={{ 
-                __html: line
-                  .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                  .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
-              }} />
+            <div key={i} className={line.trim() === "" ? "mb-3" : "mb-1"}>
+              {line.trim() !== "" && (
+                <span dangerouslySetInnerHTML={{ __html: toHtml(line) }} />
+              )}
             </div>
           );
         })}
       </div>
     );
   };
-
-  const downloadCard = async () => {
-    try {
-      const { default: html2canvas } = await import('html2canvas');
-      const cardElement = document.getElementById('business-card');
-      if (!cardElement) return;
-
-      const canvas = await html2canvas(cardElement, {
-        backgroundColor: null,
-        useCORS: true,
-        scale: 2,
-      });
-
-      const link = document.createElement('a');
-      link.download = `${card?.slug || 'business-card'}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (error) {
-      console.error('Error downloading card:', error);
-      alert('Failed to download card. Please try again.');
+  const getCardShapeClasses = () => {
+    switch (card?.shape) {
+      case "rounded":
+        return "rounded-3xl";
+      case "circle":
+        return "rounded-full aspect-square";
+      case "hexagon":
+        return "rounded-3xl";
+      default:
+        return "rounded-2xl";
     }
   };
-
-  const shareCard = async () => {
-    const url = window.location.href;
-    const title = `${card?.title || 'Digital Business Card'} - ${card?.company || 'Professional'}`;
-    const text = `Check out ${card?.title || 'this professional'}'s digital business card!`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text, url });
-      } catch (error) {
-        // User cancelled sharing
-      }
-    } else {
-      // Fallback to clipboard
-      try {
-        await navigator.clipboard.writeText(url);
-        alert('Card URL copied to clipboard!');
-      } catch (error) {
-        alert('Failed to copy URL. Please copy it manually from the address bar.');
-      }
+  interface LayoutCfg {
+    style?: string;
+    alignment?: "left" | "center" | "right";
+    font?: string;
+  }
+  const layout: LayoutCfg = (card?.layout as unknown as LayoutCfg) || {
+    style: "modern",
+    alignment: "center",
+    font: "Inter",
+  };
+  const getLayoutClasses = () => {
+    const base = "flex flex-col";
+    switch (layout.alignment) {
+      case "left":
+        return base + " items-start text-left";
+      case "right":
+        return base + " items-end text-right";
+      default:
+        return base + " items-center text-center";
     }
   };
+  const getStyleClasses = () => {
+    switch (layout.style) {
+      case "classic":
+        return "border-2 shadow-xl";
+      case "minimal":
+        return "border border-gray-200 shadow-lg";
+      case "creative":
+        return "shadow-2xl transform hover:scale-105 transition-transform duration-300";
+      default:
+        return "shadow-2xl border border-gray-100";
+    }
+  };
+  interface ThemeCfg {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+  }
+  const theme: ThemeCfg = (card?.theme as unknown as ThemeCfg) || {
+    primary: "#3B82F6",
+    secondary: "#1E40AF",
+    background: "#FFFFFF",
+    text: "#1F2937",
+  };
+  const cardUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  if (loading) {
+  // ---- Loading / Error States ----
+  if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading business card...</p>
         </div>
       </div>
     );
-  }
-
-  if (error || !card) {
+  if (error || !card)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <User className="w-10 h-10 text-red-600" />
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ExternalLink className="w-8 h-8 text-red-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Card Not Found</h1>
+          <h1 className="text-2xl font-bold mb-2 text-gray-900">
+            Card Not Found
+          </h1>
           <p className="text-gray-600 mb-6">
-            {error || 'The business card you\'re looking for doesn\'t exist or has been removed.'}
+            {error ||
+              "The business card you're looking for does not exist or is unpublished."}
           </p>
-          <a
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            <Globe className="w-5 h-5" />
-            Go to Homepage
-          </a>
+            <ArrowLeft className="w-4 h-4" />
+            Go Home
+          </button>
         </div>
       </div>
     );
-  }
 
-  const theme = card.theme as any || {
-    primary: '#3B82F6',
-    secondary: '#1E40AF',
-    background: '#FFFFFF',
-    text: '#1F2937'
-  };
-
-  const layout = card.layout as any || {
-    style: 'modern',
-    alignment: 'center',
-    font: 'Inter'
-  };
-
+  // ---- Main Render ----
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Header with Actions */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://github.com/yash131120/DBC_____logo/blob/main/dbclogo.png?raw=true"
-                alt="Digital Business Card Logo"
-                className="h-10 w-auto"
-              />
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Digital Business Card</h1>
-                <p className="text-sm text-gray-600">by SCC Infotech LLP</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowQR(!showQR)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <QrCode className="w-4 h-4" />
-                QR Code
-              </button>
-              <button
-                onClick={shareCard}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
-              <button
-                onClick={downloadCard}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* QR Code Modal */}
       {showQR && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Share QR Code</h3>
-            <div className="bg-gray-50 p-4 rounded-xl mb-4">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
-                alt="QR Code"
-                className="w-48 h-48 mx-auto"
-              />
+            <h3 className="text-lg font-semibold mb-4">Scan to View Card</h3>
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG value={cardUrl} size={200} level="M" includeMargin />
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              Scan this QR code to view this business card
+              Scan this QR code to open this business card
             </p>
             <button
               onClick={() => setShowQR(false)}
-              className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             >
               Close
             </button>
@@ -505,32 +476,31 @@ export const PublicCard: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Section */}
-          <div className="lg:col-span-1">
-            <div
-              id="business-card"
-              className={`p-8 ${getCardShapeClasses()} shadow-2xl border border-gray-100 ${getLayoutClasses()}`}
-              style={{
-                backgroundColor: theme.background,
-                color: theme.text,
-                fontFamily: `'${layout.font}', sans-serif`,
-              }}
-            >
-              {/* Avatar */}
-              <div className="mb-6">
+      <div className="py-8 px-4" id="public-card-content">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            {/* Profile Section */}
+            <div className="lg:col-span-1">
+              <div
+                ref={cardRef}
+                className={`w-full p-8 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                style={{
+                  backgroundColor: theme.background,
+                  color: theme.text,
+                  fontFamily: `'${layout.font}', sans-serif`,
+                  borderColor: theme.primary + "50",
+                }}
+              >
                 {card.avatar_url ? (
                   <img
                     src={card.avatar_url}
-                    alt={card.title || 'Profile'}
-                    className="w-32 h-32 rounded-full object-cover mx-auto border-4 shadow-lg"
+                    alt="Profile"
+                    className="w-36 h-36 rounded-full object-cover mx-auto mb-4 border-4"
                     style={{ borderColor: theme.primary }}
                   />
                 ) : (
                   <div
-                    className="w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white font-bold text-3xl border-4 shadow-lg"
+                    className="w-36 h-36 rounded-full mx-auto mb-6 flex items-center justify-center text-white font-bold text-3xl border-4"
                     style={{
                       backgroundColor: theme.primary,
                       borderColor: theme.secondary,
@@ -543,375 +513,588 @@ export const PublicCard: React.FC = () => {
                     )}
                   </div>
                 )}
-              </div>
-
-              {/* Name and Bio */}
-              <div className="mb-6">
-                <h2
-                  className="text-3xl font-bold mb-3"
-                  style={{ color: theme.text }}
-                >
-                  {card.title || 'Professional'}
-                </h2>
-                
-                {card.position && (
-                  <div className="flex items-center gap-2 mb-2 justify-center">
-                    <Briefcase className="w-5 h-5" style={{ color: theme.primary }} />
+                <div className="mb-4">
+                  <h2
+                    className="text-2xl font-bold mb-2"
+                    style={{ color: theme.text }}
+                  >
+                    {card.title || "Professional"}
+                  </h2>
+                  {card.position && card.company && (
                     <p
-                      className="text-lg font-medium"
+                      className="text-lg font-medium mb-1"
+                      style={{ color: theme.secondary }}
+                    >
+                      {card.position} at {card.company}
+                    </p>
+                  )}
+                  {card.position && !card.company && (
+                    <p
+                      className="text-lg font-medium mb-1"
                       style={{ color: theme.secondary }}
                     >
                       {card.position}
                     </p>
-                  </div>
-                )}
-                
-                {card.company && (
-                  <div className="flex items-center gap-2 mb-3 justify-center">
-                    <Building className="w-5 h-5" style={{ color: theme.primary }} />
+                  )}
+                  {!card.position && card.company && (
                     <p
-                      className="text-base opacity-90"
-                      style={{ color: theme.text }}
+                      className="text-lg font-medium mb-1"
+                      style={{ color: theme.secondary }}
                     >
                       {card.company}
                     </p>
-                  </div>
-                )}
-                
-                {card.bio && (
-                  <p
-                    className="text-sm opacity-80 leading-relaxed"
-                    style={{ color: theme.text }}
-                  >
-                    {card.bio}
-                  </p>
-                )}
-              </div>
-
-              {/* Contact Info */}
-              <div className="space-y-3 mb-6">
-                {card.email && (
-                  <a
-                    href={`mailto:${card.email}`}
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-5 hover:scale-105"
-                  >
-                    <Mail
-                      className="w-5 h-5"
-                      style={{ color: theme.primary }}
-                    />
-                    <span className="text-sm font-medium">{card.email}</span>
-                  </a>
-                )}
-                
-                {card.phone && (
-                  <a
-                    href={`tel:${card.phone}`}
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-5 hover:scale-105"
-                  >
-                    <Phone
-                      className="w-5 h-5"
-                      style={{ color: theme.primary }}
-                    />
-                    <span className="text-sm font-medium">{card.phone}</span>
-                  </a>
-                )}
-                
-                {card.whatsapp && (
-                  <a
-                    href={`https://wa.me/${card.whatsapp.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-5 hover:scale-105"
-                  >
-                    <MessageCircle
-                      className="w-5 h-5"
-                      style={{ color: theme.primary }}
-                    />
-                    <span className="text-sm font-medium">WhatsApp</span>
-                  </a>
-                )}
-                
-                {card.website && (
-                  <a
-                    href={card.website.startsWith('http') ? card.website : `https://${card.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-black hover:bg-opacity-5 hover:scale-105"
-                  >
-                    <Globe
-                      className="w-5 h-5"
-                      style={{ color: theme.primary }}
-                    />
-                    <span className="text-sm font-medium">{card.website}</span>
-                  </a>
-                )}
-                
-                {card.address && (
-                  <div className="flex items-start gap-3 p-3 rounded-lg">
-                    <MapPin
-                      className="w-5 h-5 mt-0.5"
-                      style={{ color: theme.primary }}
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium block">{card.address}</span>
-                      {card.map_link && (
-                        <a
-                          href={card.map_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 mt-1 inline-flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          View on Map
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Social Links */}
-              {socialLinks.length > 0 && (
-                <div className="flex gap-3 flex-wrap justify-center">
-                  {socialLinks.map((link) => {
-                    const Icon = SOCIAL_ICONS[link.platform] || Globe;
-                    return (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
-                        style={{
-                          backgroundColor: theme.primary,
-                        }}
-                        title={`${link.platform}${link.username ? ` - @${link.username}` : ''}`}
-                      >
-                        <Icon className="w-6 h-6 text-white" />
-                      </a>
-                    );
-                  })}
+                  )}
+                  {card.bio && (
+                    <p
+                      className="text-sm opacity-70"
+                      style={{ color: theme.text }}
+                    >
+                      {card.bio}
+                    </p>
+                  )}
                 </div>
-              )}
-
-              {/* View Count */}
-              <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <Eye className="w-4 h-4" />
-                  <span>{card.view_count || 0} views</span>
+                <div className="space-y-3 mb-0">
+                  {card.email && (
+                    <a
+                      href={`mailto:${card.email}`}
+                      className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                    >
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/128/16509/16509529.png"
+                        alt="Gmail"
+                        className="w-8 h-8 rounded"
+                      />
+                      <div>
+                        <p className="text-sm text-gray-500 break-all">
+                          {card.email}
+                        </p>
+                      </div>
+                    </a>
+                  )}
+                  {card.address &&
+                  card.map_link &&
+                  typeof card.map_link === "string" &&
+                  card.map_link.trim() !== "" ? (
+                    <a
+                      href={card.map_link as string}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                    >
+                      <img
+                        src="https://cdn-icons-png.freepik.com/512/16509/16509523.png"
+                        alt="Map"
+                        className="w-8 h-8 rounded"
+                      />
+                      <div>
+                        <p className="text-sm text-gray-500">{card.address}</p>
+                      </div>
+                    </a>
+                  ) : card.address ? (
+                    <p className="text-sm mb-2">{card.address}</p>
+                  ) : null}
+                  {card.phone && (
+                    <a
+                      href={`tel:${card.phone}`}
+                      className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                    >
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/128/9073/9073336.png"
+                        alt="Phone"
+                        className="w-8 h-8 rounded"
+                      />
+                      <div>
+                        <p className="text-sm text-gray-500">{card.phone}</p>
+                      </div>
+                    </a>
+                  )}
+                  {card.whatsapp && (
+                    <a
+                      href={`https://wa.me/${card.whatsapp.replace(
+                        /[^0-9]/g,
+                        ""
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                    >
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/128/15713/15713434.png"
+                        alt="WhatsApp"
+                        className="w-8 h-8 rounded"
+                      />
+                      <div>
+                        <p className="text-sm text-gray-500">Send message</p>
+                      </div>
+                    </a>
+                  )}
+                  {card.website && (
+                    <a
+                      href={
+                        card.website.startsWith("http")
+                          ? card.website
+                          : `https://${card.website}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                    >
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/128/10453/10453141.png"
+                        alt="Website"
+                        className="w-8 h-8 rounded"
+                      />
+                      <div>
+                        <p className="text-sm text-gray-500 break-all">
+                          {card.website}
+                        </p>
+                      </div>
+                    </a>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t justify-center" style={{ borderColor: theme.primary }}>
+                    <Eye className="w-4 h-4" />
+                    <span>{card.view_count || 0} views</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Content Section */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Products/Services */}
-            {products.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Briefcase className="w-6 h-6 text-blue-600" />
-                  Products & Services
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {products.filter(p => p.is_active).map((product) => (
-                    <div key={product.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-                      {/* Product Images */}
-                      {product.images && product.images.length > 0 && (
-                        <div className="mb-4">
-                          <div className="grid grid-cols-2 gap-2">
-                            {product.images.slice(0, 4).map((image, index) => (
-                              <div key={index} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                                <img
-                                  src={image.image_url}
-                                  alt={image.alt_text || `${product.title} image ${index + 1}`}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          {product.images.length > 4 && (
-                            <p className="text-xs text-gray-500 mt-2 text-center">
-                              +{product.images.length - 4} more images
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h4 className="text-xl font-bold text-gray-900 mb-2">{product.title}</h4>
-                          {product.price && (
-                            <p className="text-lg text-green-600 font-semibold mb-2">{product.price}</p>
-                          )}
-                          {product.category && (
-                            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full mb-3">
-                              {product.category}
-                            </span>
-                          )}
-                        </div>
-                        {product.is_featured && (
-                          <Star className="w-6 h-6 text-yellow-500 fill-current" />
-                        )}
-                      </div>
-                      
-                      <div className="mb-4">
-                        {renderFormattedText(product.description, product.text_alignment)}
-                      </div>
-                      
-                      {product.inquiries.filter(i => i.is_active).length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {product.inquiries.filter(i => i.is_active).map((inquiry, index) => (
-                            <a
-                              key={index}
-                              href={
-                                inquiry.inquiry_type === 'phone' ? `tel:${inquiry.contact_value}` :
-                                inquiry.inquiry_type === 'whatsapp' ? `https://wa.me/${inquiry.contact_value.replace(/[^0-9]/g, '')}` :
-                                inquiry.inquiry_type === 'email' ? `mailto:${inquiry.contact_value}` :
-                                inquiry.contact_value
-                              }
-                              target={inquiry.inquiry_type === 'link' ? '_blank' : undefined}
-                              rel={inquiry.inquiry_type === 'link' ? 'noopener noreferrer' : undefined}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              {inquiry.inquiry_type === 'link' && <ExternalLink className="w-4 h-4" />}
-                              {inquiry.inquiry_type === 'phone' && <Phone className="w-4 h-4" />}
-                              {inquiry.inquiry_type === 'whatsapp' && <MessageCircle className="w-4 h-4" />}
-                              {inquiry.inquiry_type === 'email' && <Mail className="w-4 h-4" />}
-                              {inquiry.button_text}
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Media Gallery */}
-            {mediaItems.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <ImageIcon className="w-6 h-6 text-purple-600" />
-                  Media Gallery
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {mediaItems.map((item) => (
-                    <div key={item.id} className="relative group">
-                      {item.type === 'image' ? (
-                        <img
-                          src={item.url}
-                          alt={item.title}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      ) : item.type === 'video' ? (
-                        <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <Play className="w-8 h-8 text-gray-600" />
-                        </div>
-                      ) : (
-                        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <FileText className="w-8 h-8 text-gray-600" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                          {item.title}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Review Links */}
-            {reviewLinks.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Star className="w-6 h-6 text-yellow-600" />
-                  Customer Reviews
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {reviewLinks.map((review) => (
+            {/* Right Column Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Social / Contact */}
+              <div
+                ref={cardRef}
+                className={`w-full p-4 lg:p-6 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                style={{
+                  backgroundColor: theme.background,
+                  color: theme.text,
+                  fontFamily: `'${layout.font}', sans-serif`,
+                  borderColor: theme.primary + "50",
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-4">Get In Touch</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {socialLinks.map((link) => (
                     <a
-                      key={review.id}
-                      href={review.review_url}
+                      key={link.id}
+                      href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-yellow-400 hover:shadow-md transition-all duration-200 group"
+                      className="flex items-center gap-2 p-1 rounded-lg hover:bg-black/10 transition-all hover:scale-105"
                     >
-                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
-                        <Star className="w-6 h-6 text-yellow-600" />
+                      <div className="w-10 h-10 flex items-center justify-center">
+                        <img
+                          src={getPlatformLogo(link.platform, link.url)}
+                          alt={link.platform}
+                          className="w-8 h-8"
+                        />
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 group-hover:text-yellow-700 transition-colors">
-                          {review.title}
-                        </h4>
-                        <p className="text-sm text-gray-600">View our reviews</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">
+                          {link.platform}
+                        </div>
+                        {link.username && (
+                          <div className="text-xs opacity-75 truncate">
+                            @{link.username}
+                          </div>
+                        )}
                       </div>
-                      <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-yellow-600 transition-colors" />
                     </a>
                   ))}
                 </div>
               </div>
-            )}
 
-            {/* Call to Action */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg p-6 text-center text-white">
-              <Heart className="w-12 h-12 mx-auto mb-4 text-pink-200" />
-              <h3 className="text-xl font-bold mb-2">Get Connected</h3>
-              <p className="text-blue-100 mb-4">
-                Save my contact information and stay in touch!
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={shareCard}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+              {/* Media Gallery */}
+              {mediaItems.length > 0 && (
+                <div
+                  ref={cardRef}
+                  className={`w-full p-6 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                  style={{
+                    backgroundColor: theme.background,
+                    color: theme.text,
+                    fontFamily: `'${layout.font}', sans-serif`,
+                    borderColor: theme.primary + "50",
+                  }}
                 >
-                  <Share2 className="w-5 h-5" />
-                  Share Card
-                </button>
-                <button
-                  onClick={downloadCard}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition-colors font-semibold"
+                  <h3
+                    className="text-xl font-semibold mb-4 flex items-center gap-2"
+                    style={{ color: theme.text }}
+                  >
+                    <Play className="w-5 h-5 text-blue-600" />
+                    Media Gallery
+                  </h3>
+                  <div className="flex gap-4 overflow-x-auto pb-2">
+                    {mediaItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="relative group flex-shrink-0 aspect-video"
+                      >
+                        {item.type === "video" ? (
+                          <div className="relative aspect-video">
+                            {getVideoThumbnail(item.url) ? (
+                              <img
+                                src={getVideoThumbnail(item.url)!}
+                                alt={item.title}
+                                className="w-full h-40 md:h-40 object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                <Play className="w-10 h-10 text-gray-600" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black bg-opacity-10 rounded-lg flex items-center justify-center">
+                              <Play className="w-10 h-10 text-white" />
+                            </div>
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="absolute inset-0 rounded-lg"
+                            />
+                          </div>
+                        ) : item.type === "image" ? (
+                          <img
+                            src={item.url}
+                            alt={item.title}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-48 bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
+                            <FileText className="w-12 h-12 text-gray-600 mb-2" />
+                            <span className="text-sm text-gray-600">
+                              {item.title}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {reviewLinks.length > 0 && (
+                <div
+                  ref={cardRef}
+                  className={`w-full p-6 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                  style={{
+                    backgroundColor: theme.background,
+                    color: theme.text,
+                    fontFamily: `'${layout.font}', sans-serif`,
+                    borderColor: theme.primary + "50",
+                  }}
                 >
-                  <Download className="w-5 h-5" />
-                  Save Card
-                </button>
-              </div>
+                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-600" /> Reviews
+                  </h3>
+                  <div className="space-y-3">
+                    {reviewLinks.map((r) => (
+                      <a
+                        key={r.id}
+                        href={r.review_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-4 border border-gray-200 rounded-xl hover:shadow-md"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
+                            <Star className="w-5 h-5 text-yellow-600" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-700">
+                              {r.title}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              View our customer reviews
+                            </p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Products & Services */}
+          {products.length > 0 && (
+            <div
+              ref={cardRef}
+              className={`w-full p-6 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()} overflow-visible`}
+              style={{
+                backgroundColor: theme.background,
+                color: theme.text,
+                fontFamily: `'${layout.font}', sans-serif`,
+                borderColor: theme.primary + "50",
+              }}
+            >
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-600" /> Products & Services
+              </h3>
+              <div className="w-full rounded-2xl bg-white/80 backdrop-blur-sm p-2 overflow-x-auto">
+                <div
+                  className="flex gap-6 pb-2"
+                  style={{ minWidth: "fit-content" }}
+                >
+                  {products.map((prod) => {
+                    const isMobile =
+                      typeof window !== "undefined" && window.innerWidth < 768;
+                    const showMoreCount = prod.images.length - 2;
+                    const showMoreText =
+                      showMoreCount > 0
+                        ? isMobile
+                          ? `+${showMoreCount} more images`
+                          : "+"
+                        : "";
+                    const descLines = prod.description.split("\n");
+                    const long = descLines.length > 5;
+                    const expanded = descExpanded[prod.id];
+                    return (
+                      <div
+                        key={prod.id}
+                        className="min-w-[320px] max-w-[400px] border border-gray-200 rounded-xl p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all"
+                      >
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          {prod.images.slice(0, 2).map((img, i: number) => (
+                            <div
+                              key={i}
+                              className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative cursor-pointer"
+                              onClick={() => {
+                                setGalleryImages(
+                                  prod.images.map((m) => m.image_url)
+                                );
+                                setGalleryIndex(i);
+                                setGalleryOpen(true);
+                              }}
+                            >
+                              <img
+                                src={img.image_url}
+                                alt={img.alt_text || `Image ${i + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              {i === 1 && showMoreCount > 0 && (
+                                <div
+                                  className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg"
+                                  onClick={() => {
+                                    setGalleryImages(
+                                      prod.images.map((m) => m.image_url)
+                                    );
+                                    setGalleryIndex(1);
+                                    setGalleryOpen(true);
+                                  }}
+                                >
+                                  {showMoreText}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {showMoreCount > 0 && isMobile && (
+                          <div
+                            className="text-xs text-gray-500 mb-2 text-center cursor-pointer"
+                            onClick={() => {
+                              setGalleryImages(
+                                prod.images.map((m) => m.image_url)
+                              );
+                              setGalleryIndex(1);
+                              setGalleryOpen(true);
+                            }}
+                          >
+                            {showMoreText}
+                          </div>
+                        )}
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-bold text-lg text-gray-900">
+                            {prod.title}
+                          </h4>
+                          {prod.is_featured && (
+                            <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                          )}
+                        </div>
+                        {prod.category && (
+                          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mb-2">
+                            {prod.category}
+                          </span>
+                        )}
+                        {prod.price && (
+                          <p className="text-green-600 font-bold text-base mb-2">
+                            {prod.price}
+                          </p>
+                        )}
+                        <div className="text-xs" style={{ color: theme.text }}>
+                          {renderProductDescription(
+                            expanded || !long
+                              ? prod.description
+                              : descLines.slice(0, 4).join("\n"),
+                            prod.text_alignment
+                          )}
+                        </div>
+                        {long && (
+                          <button
+                            className="text-blue-600 text-xs mt-1 underline"
+                            onClick={() =>
+                              setDescExpanded((p) => ({
+                                ...p,
+                                [prod.id]: !expanded,
+                              }))
+                            }
+                          >
+                            {expanded ? "Show less" : "Show more"}
+                          </button>
+                        )}
+                        {prod.inquiries.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 mt-2">
+                            {prod.inquiries.map((q) => (
+                              <a
+                                key={q.id}
+                                href={
+                                  q.inquiry_type === "phone"
+                                    ? `tel:${q.contact_value}`
+                                    : q.inquiry_type === "whatsapp"
+                                    ? `https://wa.me/${q.contact_value.replace(
+                                        /[^0-9]/g,
+                                        ""
+                                      )}`
+                                    : q.inquiry_type === "email"
+                                    ? `mailto:${q.contact_value}`
+                                    : q.contact_value
+                                }
+                                target={
+                                  q.inquiry_type === "link"
+                                    ? "_blank"
+                                    : undefined
+                                }
+                                rel={
+                                  q.inquiry_type === "link"
+                                    ? "noopener noreferrer"
+                                    : undefined
+                                }
+                                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-lg shadow-md hover:opacity-90"
+                                style={{ backgroundColor: theme.primary }}
+                              >
+                                {q.inquiry_type === "link" && (
+                                  <ExternalLink className="w-4 h-4" />
+                                )}
+                                {q.inquiry_type === "phone" && (
+                                  <Phone className="w-4 h-4" />
+                                )}
+                                {q.inquiry_type === "whatsapp" && (
+                                  <MessageCircle className="w-4 h-4" />
+                                )}
+                                {q.inquiry_type === "email" && (
+                                  <Mail className="w-4 h-4" />
+                                )}
+                                {q.button_text}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {galleryOpen && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+                  onClick={() => setGalleryOpen(false)}
+                >
+                  <div
+                    className="relative bg-white rounded-lg shadow-lg max-w-2xl w-full p-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="absolute top-2 right-4 text-gray-600 hover:text-red-600 text-2xl font-bold"
+                      onClick={() => setGalleryOpen(false)}
+                    >
+                      &times;
+                    </button>
+                    <img
+                      src={galleryImages[galleryIndex]}
+                      alt="Gallery"
+                      className="max-h-[60vh] w-auto mx-auto rounded mb-4"
+                    />
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      {galleryImages.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setGalleryIndex(i)}
+                          className={`w-16 h-12 rounded border-2 ${
+                            galleryIndex === i
+                              ? "border-blue-600"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <img
+                            src={img}
+                            alt={`Thumb ${i + 1}`}
+                            className="w-full h-full object-cover rounded"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="text-center py-5">
+            <p className="text-gray-500 text-sm">
+              Powered by Digital Business Cards
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <img
-              src="https://github.com/yash131120/DBC_____logo/blob/main/logo.png?raw=true"
-              alt="SCC Infotech LLP Logo"
-              className="w-8 h-8"
-            />
-            <span className="text-lg font-bold text-gray-900">SCC Infotech LLP</span>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Create your own digital business card with our AI-powered platform
-          </p>
-          <a
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-semibold"
-          >
-            <Globe className="w-5 h-5" />
-            Create Your Card
-          </a>
-        </div>
-      </footer>
+      {/* Desktop Floating Buttons */}
+      <div className="fixed bottom-8 right-8 flex-col gap-3 hidden lg:flex">
+        <button
+          onClick={() => setShowQR(!showQR)}
+          className="w-14 h-14 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 hover:scale-110 flex items-center justify-center"
+          title="Show QR Code"
+        >
+          <QrCode className="w-7 h-7" />
+        </button>
+        <button
+          onClick={handleShare}
+          className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 flex items-center justify-center"
+          title="Share Card"
+        >
+          <Share2 className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleDownload}
+          className="w-14 h-14 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 hover:scale-110 flex items-center justify-center"
+          title="Download PNG"
+        >
+          <Download className="w-7 h-7" />
+        </button>
+      </div>
+
+      {/* Mobile Actions */}
+      <div className="grid grid-cols-3 gap-2 p-4 mt-5 flex lg:hidden">
+        <button
+          onClick={handleDownload}
+          className="flex flex-col items-center gap-2 p-4 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-lg"
+        >
+          <Download className="w-8 h-8" />
+        </button>
+        <button
+          onClick={() => setShowQR(true)}
+          className="flex flex-col items-center gap-2 p-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 shadow-lg"
+        >
+          <QrCode className="w-8 h-8" />
+        </button>
+        <button
+          onClick={handleShare}
+          className="flex flex-col items-center gap-2 p-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg"
+        >
+          <Share2 className="w-8 h-8" />
+        </button>
+      </div>
     </div>
   );
 };
