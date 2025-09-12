@@ -35,15 +35,17 @@ module.exports = async (req, res) => {
     .single();
 
   if (card && !error) {
+    // Prefer card.title, fallback to card.name, fallback to default
+    const displayName = card.title || card.name || "Digital Business Card";
     meta = {
-      title: `${card.name || "Digital Business Card"} - ${card.company || "Professional"}`,
-      description: card.bio || `Connect with ${card.name || "this professional"}`,
+      title: `${displayName} - ${card.company || "Professional"}`,
+      description: card.bio || `Connect with ${displayName || "this professional"}`,
       image: card.avatar_url
         ? (card.avatar_url.startsWith("http") ? card.avatar_url : `${baseUrl}${card.avatar_url}`)
         : defaultMeta.image,
       url: meta.url,
-      author: card.title || card.name || defaultMeta.author,
-      name: card.title || card.name,
+      author: displayName,
+      name: displayName,
       company: card.company,
       profession: card.position,
       bio: card.bio,
