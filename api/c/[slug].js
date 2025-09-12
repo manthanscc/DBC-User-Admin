@@ -1,4 +1,3 @@
-
 const { createClient } = require("@supabase/supabase-js");
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || "YOUR_SUPABASE_URL";
@@ -10,7 +9,7 @@ const defaultMeta = {
   description:
     "Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes.",
   image:
-    "https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true",
+    "https://businesscardsscc.vercel.app/DBCLOGO_2.png",
   url: "https://dbc.sccinfotech.com",
   author: "SCC Infotech LLP",
 };
