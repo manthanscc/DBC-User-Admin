@@ -164,7 +164,12 @@ const SHAPES = [
   // { id: "hexagon", name: "Hexagon", preview: "rounded-3xl" },
 ];
 
-const LAYOUTS = [
+const LAYOUTS: Array<{
+  style: string;
+  alignment: string;
+  font: string;
+  name: string;
+}> = [
   {
     style: "modern",
     alignment: "center",
@@ -205,7 +210,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "preview"
+    "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced"
   >("basic");
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
@@ -625,7 +630,11 @@ export const CardEditor: React.FC<CardEditorProps> = ({
     }
   };
 
-  const tabs = [
+  const tabs: Array<{
+    id: "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced";
+    label: string;
+    icon: React.ElementType;
+  }> = [
     { id: "basic", label: "Basic Info", icon: Type },
     { id: "contact", label: "Contact", icon: Globe },
     { id: "social", label: "Social Links", icon: Share2 },
@@ -634,7 +643,6 @@ export const CardEditor: React.FC<CardEditorProps> = ({
     { id: "reviews", label: "Reviews", icon: Eye },
     { id: "design", label: "Design", icon: Palette },
     { id: "advanced", label: "Advanced", icon: Settings },
-    // { id: "preview", label: "Preview", icon: Eye },
   ];
 
   const renderBasicInfo = () => (
@@ -983,104 +991,70 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
   const renderDesign = () => (
     <div className="space-y-8">
-      {/* Design Tools */}
-      {/* <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-purple-900 mb-3">
-          Design Tools
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={generateRandomTheme}
-            className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-          >
-            <Zap className="w-4 h-4" />
-            Random Theme
-          </button>
-          <button
-            onClick={resetToDefaults}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Reset to Defaults
-          </button>
-        </div>
-      </div> */}
-
-      {/* Theme Selection */}
+      {/* Theme Selection with Color Shades */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Choose Theme
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Theme</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {THEMES.map((theme) => (
             <button
               key={theme.name}
               onClick={() => handleInputChange("theme", theme)}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded-xl border-2 shadow-sm flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 formData.theme.name === theme.name
                   ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-blue-300"
               }`}
+              style={{ minWidth: 0 }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: theme.primary }}
-                />
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: theme.secondary }}
-                />
+              <div className="flex gap-1 mb-2">
+                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.primary }} title="Primary" />
+                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.secondary }} title="Secondary" />
+                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.background }} title="Background" />
+                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.text }} title="Text" />
               </div>
-              <p className="text-sm font-medium text-gray-900">{theme.name}</p>
+              <p className="text-xs font-semibold text-gray-900 text-center whitespace-nowrap">{theme.name}</p>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Shape Selection */}
+      {/* Shape Selection - Mobile Friendly */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Card Shape</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SHAPES.map((shape) => (
             <button
               key={shape.id}
               onClick={() => handleInputChange("shape", shape.id)}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded-xl border-2 flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 formData.shape === shape.id
                   ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-blue-300"
               }`}
             >
-              <div
-                className={`w-16 h-10 bg-gray-300 mx-auto mb-2 ${shape.preview}`}
-              />
-              <p className="text-sm font-medium text-gray-900">{shape.name}</p>
+              <div className={`w-14 h-8 bg-gray-200 mb-2 ${shape.preview}`} />
+              <span className="text-xs font-medium text-gray-900 text-center">{shape.name}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Layout Selection */}
+      {/* Layout Selection - Mobile Friendly */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Layout Style
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Style</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {LAYOUTS.map((layout) => (
             <button
               key={layout.name}
               onClick={() => handleInputChange("layout", layout)}
-              className={`p-4 rounded-lg border-2 text-left transition-all ${
+              className={`p-3 rounded-xl border-2 text-left flex flex-col transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 formData.layout.name === layout.name
                   ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-blue-300"
               }`}
             >
-              <p className="font-medium text-gray-900">{layout.name}</p>
-              <p className="text-sm text-gray-500">
-                {layout.style} • {layout.alignment} • {layout.font}
-              </p>
+              <span className="font-medium text-gray-900">{layout.name}</span>
+              <span className="text-xs text-gray-500">{layout.style} • {layout.alignment} • {layout.font}</span>
             </button>
           ))}
         </div>
@@ -1213,36 +1187,32 @@ export const CardEditor: React.FC<CardEditorProps> = ({
       {/* Confetti Side Cannons Animation */}
       {/* <ConfettiSideCannons trigger={showConfettiCannons} /> */}
 
-      <div className=" mx-auto">
+      <div className="mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Editor Panel */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl shadow-lg border-2 border-blue-100 overflow-hidden">
               {/* Header */}
-              <div className="border-b border-gray-200 p-6">
+              <div className="border-b-2 border-blue-100 p-6 bg-gradient-to-r from-blue-50 via-white to-purple-50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-base lg:text-lg font-bold text-gray-900">
-                      {existingCard
-                        ? "Edit Business Card"
-                        : "Create New Business Card"}
+                    <h2 className="text-lg lg:text-xl font-extrabold text-blue-900 tracking-tight drop-shadow-sm" style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}>
+                      {existingCard ? "Edit Business Card" : "Create New Business Card"}
                     </h2>
-                    <p className="text-sm lg:text-base text-gray-600">
-                      {existingCard
-                        ? "Update your card information"
-                        : "Fill in your details to create your digital business card"}
+                    <p className="text-base text-gray-600">
+                      {existingCard ? "Update your card information" : "Fill in your details to create your digital business card"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleSave}
                       disabled={saving || !formData.title || !formData.username}
-                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex items-center gap-2 px-3 lg:px-6 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-xs lg:text-base text-white rounded-xl shadow-md hover:from-blue-600 hover:to-pink-600 hover:scale-105 transition-all font-semibold border-2 border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <Save className="w-4 h-4" />
+                        <Save className="w-5 h-5" />
                       )}
                       {saving ? "Saving..." : "Save Card"}
                     </button>
@@ -1251,21 +1221,24 @@ export const CardEditor: React.FC<CardEditorProps> = ({
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-gray-200">
+              <div className="border-b-2 border-blue-100 bg-gradient-to-r from-blue-50 via-white to-purple-50">
                 <nav className="flex overflow-x-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-3 lg:px-4 py-3 text-sm lg:text-base font-semibold whitespace-nowrap border-b-4 transition-all ${
                           activeTab === tab.id
-                            ? "border-blue-500 text-blue-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            ? "border-blue-500 text-blue-700 bg-blue-100 shadow"
+                            : "border-transparent text-gray-500 hover:text-blue-700 hover:bg-blue-50"
                         }`}
+                        type="button"
+                        aria-current={activeTab === tab.id ? "page" : undefined}
+                        style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                         {tab.label}
                       </button>
                     );
@@ -1274,7 +1247,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
               </div>
 
               {/* Tab Content */}
-              <div className="p-2 lg:p-6 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+              <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-[400px]">
                 {activeTab === "basic" && renderBasicInfo()}
                 {activeTab === "contact" && renderContactInfo()}
                 {activeTab === "social" && renderSocialLinks()}
@@ -1303,30 +1276,22 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                 )}
                 {activeTab === "design" && renderDesign()}
                 {activeTab === "advanced" && renderAdvanced()}
-                {/* {activeTab === "preview" && (
-                  <CardPreview
-                    formData={formData}
-                    socialLinks={socialLinks}
-                    mediaItems={mediaItems}
-                    reviews={reviews}
-                    isFullPage={true}
-                  />
-                )} */}
               </div>
 
               {/* Actions */}
-              <div className="border-t border-gray-200 p-4 flex justify-between">
+              <div className="border-t-2 border-blue-100 p-4 flex justify-between bg-gradient-to-r from-blue-50 via-white to-purple-50">
                 <button
                   onClick={() => {
                     const currentIndex = tabs.findIndex(
                       (tab) => tab.id === activeTab
                     );
                     if (currentIndex > 0) {
-                      setActiveTab(tabs[currentIndex - 1].id as any);
+                      setActiveTab(tabs[currentIndex - 1].id);
                     }
                   }}
-                  className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold border border-gray-200"
                   disabled={activeTab === tabs[0].id}
+                  type="button"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Previous
@@ -1337,11 +1302,12 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                       (tab) => tab.id === activeTab
                     );
                     if (currentIndex < tabs.length - 1) {
-                      setActiveTab(tabs[currentIndex + 1].id as any);
+                      setActiveTab(tabs[currentIndex + 1].id);
                     }
                   }}
-                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl hover:from-blue-600 hover:to-pink-600 transition-all font-semibold border-2 border-blue-400"
                   disabled={activeTab === tabs[tabs.length - 1].id}
+                  type="button"
                 >
                   Next
                   <ArrowRight className="w-4 h-4" />
@@ -1352,7 +1318,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
           {/* Preview Panel */}
           <div className="lg:col-span-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b-2 border-blue-100 mb-4">
               <div>
                 <div className="flex items-center gap-2 pb-0 lg:pl-0 pl-[50%] mb-4">
                   {autoSaving && (
@@ -1379,7 +1345,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
                           formData.is_published ? "bg-green-500" : "bg-gray-300"
                         }`}
-                        aria-pressed={formData.is_published}
+                        aria-pressed={formData.is_published ? "true" : "false"}
                       >
                         <span
                           className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
@@ -1389,7 +1355,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                           }`}
                         />
                       </button>
-                      <span className="text-sm lg:text-xl font-medium text-gray-700">
+                      <span className="text-base lg:text-xl font-medium text-gray-700">
                         {formData.is_published ? "Published" : "Draft"}
                       </span>
                     </label>
@@ -1441,6 +1407,7 @@ const SocialLinkForm: React.FC<{
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            aria-label="Platform"
           >
             <option value="">Select platform</option>
             {Object.keys(SOCIAL_PLATFORMS).map((platformName) => (

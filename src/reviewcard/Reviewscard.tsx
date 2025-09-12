@@ -94,7 +94,7 @@ function Reviewscard() {
                       {/* Logo Display */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img
-                          src="https://github.com/yash131120/DBC_____logo/blob/main/AI%20Review%20System%20Logo.png?raw=true"
+                          src="https://github.com/yash131120/DBC_____logo/blob/main/DBCLOGO_2.png?raw=true"
                           alt="review Logo"
                           className="w-[30px] sm:w-[50px] animate-pulse-gentle object-contain"
                         />
