@@ -1,16 +1,10 @@
-const express = require("express");
+
 const { createClient } = require("@supabase/supabase-js");
 
-const app = express();
-const port = process.env.PORT || 3000;
-
-// Set your Supabase credentials (use env vars in production)
 const supabaseUrl = process.env.VITE_SUPABASE_URL || "YOUR_SUPABASE_URL";
-const supabaseAnonKey =
-  process.env.VITE_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Default meta tags
 const defaultMeta = {
   title: "Digital Business Card Builder - SCC Infotech LLP",
   description:
@@ -21,11 +15,12 @@ const defaultMeta = {
   author: "SCC Infotech LLP",
 };
 
-app.get("/c/:slug", async (req, res) => {
-  const { slug } = req.params;
+module.exports = async (req, res) => {
+  // Vercel serverless: req.query.slug for dynamic route
+  const slug = req.query.slug;
   let meta = {
     ...defaultMeta,
-    url: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+    url: `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}${req.url}`,
   };
 
   // Fetch card data from Supabase
@@ -38,14 +33,8 @@ app.get("/c/:slug", async (req, res) => {
 
   if (card && !error) {
     meta = {
-      title: `${card.title || "Digital Business Card"} - ${
-        card.company || "Professional"
-      }`,
-      description: `${
-        card.bio || `Connect with ${card.title || "this professional"}`
-      }${card.position ? ` - ${card.position}` : ""}${
-        card.company ? ` at ${card.company}` : ""
-      }`,
+      title: `${card.title || "Digital Business Card"} - ${card.company || "Professional"}`,
+      description: `${card.bio || `Connect with ${card.title || "this professional"}`}${card.position ? ` - ${card.position}` : ""}${card.company ? ` at ${card.company}` : ""}`,
       image: card.avatar_url || defaultMeta.image,
       url: meta.url,
       author: card.title || defaultMeta.author,
@@ -56,7 +45,6 @@ app.get("/c/:slug", async (req, res) => {
     };
   }
 
-  // Render HTML with meta tags
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.status(200).send(`
     <!doctype html>
@@ -93,11 +81,4 @@ app.get("/c/:slug", async (req, res) => {
       </body>
     </html>
   `);
-});
-
-// Serve static files (React build)
-app.use(express.static("dist")); // or 'build' if using CRA
-
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+};
