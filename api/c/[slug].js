@@ -9,7 +9,7 @@ const defaultMeta = {
   description:
     "Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes.",
   image:
-    "/DBCLOGO_2.png",
+    "https://businesscardsscc.vercel.app/DBCLOGO_2.png",
   url: "https://dbc.sccinfotech.com",
   author: "SCC Infotech LLP",
 };
@@ -17,9 +17,13 @@ const defaultMeta = {
 module.exports = async (req, res) => {
   // Vercel serverless: req.query.slug for dynamic route
   const slug = req.query.slug;
+
+  // Always use absolute URL for og:image
+  const baseUrl = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
   let meta = {
     ...defaultMeta,
-    url: `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}${req.url}`,
+    url: baseUrl + req.url,
+    image: defaultMeta.image,
   };
 
   // Fetch card data from Supabase
@@ -32,12 +36,12 @@ module.exports = async (req, res) => {
 
   if (card && !error) {
     meta = {
-      title: `${card.title || "Digital Business Card"} - ${card.company || "Professional"}`,
-      description: `${card.bio || `Connect with ${card.title || "this professional"}`}${card.position ? ` - ${card.position}` : ""}${card.company ? ` at ${card.company}` : ""}`,
-      image: card.avatar_url || defaultMeta.image,
+      title: `${card.title || card.name || "Digital Business Card"} - ${card.company || "Professional"}`,
+      description: `${card.bio || `Connect with ${card.title || card.name || "this professional"}`}${card.position ? ` - ${card.position}` : ""}${card.company ? ` at ${card.company}` : ""}`,
+      image: card.avatar_url ? (card.avatar_url.startsWith('http') ? card.avatar_url : baseUrl + card.avatar_url) : defaultMeta.image,
       url: meta.url,
-      author: card.title || defaultMeta.author,
-      name: card.title,
+      author: card.title || card.name || defaultMeta.author,
+      name: card.title || card.name,
       company: card.company,
       profession: card.position,
       bio: card.bio,
