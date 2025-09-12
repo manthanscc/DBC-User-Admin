@@ -36,9 +36,11 @@ module.exports = async (req, res) => {
 
   if (card && !error) {
     meta = {
-      title: `${card.title || card.name || "Digital Business Card"} - ${card.company || "Professional"}`,
-      description: `${card.bio || `Connect with ${card.title || card.name || "this professional"}`}${card.position ? ` - ${card.position}` : ""}${card.company ? ` at ${card.company}` : ""}`,
-      image: card.avatar_url ? (card.avatar_url.startsWith('http') ? card.avatar_url : baseUrl + card.avatar_url) : defaultMeta.image,
+      title: `${card.name || "Digital Business Card"} - ${card.company || "Professional"}`,
+      description: card.bio || `Connect with ${card.name || "this professional"}`,
+      image: card.avatar_url
+        ? (card.avatar_url.startsWith("http") ? card.avatar_url : `${baseUrl}${card.avatar_url}`)
+        : defaultMeta.image,
       url: meta.url,
       author: card.title || card.name || defaultMeta.author,
       name: card.title || card.name,
