@@ -1,35 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-// Use fetch to Supabase REST API (anon key safe for public data)
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const config = {
   runtime: 'edge',
-  matcher: ['/c/:slug*'],
 };
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export default async function handler(req) {
   const url = new URL(req.url);
   const slug = url.pathname.split('/c/')[1]?.split('/')[0];
   if (!slug) {
-    return NextResponse.next();
+    // fallback to default index.html
+    return fetch(new URL('/', req.url));
   }
 
   // Fetch card data from Supabase REST API
-  const { data, error } = await fetch(
-    `${SUPABASE_URL}/rest/v1/business_cards?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&select=id,name,company,position,avatar_url,bio`,
-    {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-    }
-  ).then((r) => r.json().then((d) => ({ data: d[0], error: d.error })));
+  let data = null;
+  try {
+    const resp = await fetch(
+      `${SUPABASE_URL}/rest/v1/business_cards?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&select=id,name,company,position,avatar_url,bio`,
+      {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
+    const arr = await resp.json();
+    data = arr[0];
+  } catch (e) {
+    data = null;
+  }
 
   if (!data) {
-    // Not found, fallback to default
-    return NextResponse.next();
+    // fallback to default index.html
+    return fetch(new URL('/', req.url));
   }
 
   // Build meta tags
@@ -63,7 +68,7 @@ export default async function handler(req) {
 </body>
 </html>`;
 
-  return new NextResponse(html, {
+  return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html',
