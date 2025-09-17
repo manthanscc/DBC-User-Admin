@@ -1,44 +1,45 @@
 
-export const config = {
-  runtime: 'edge',
-};
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export default async function handler(req) {
-  const url = new URL(req.url);
-  const slug = url.pathname.split('/c/')[1]?.split('/')[0];
+module.exports = async (req, res) => {
+  // Get slug from query or path
+  let slug = null;
+  if (req.query && req.query.slug) {
+    slug = req.query.slug;
+  } else if (req.url) {
+    const match = req.url.match(/\/c\/([^/?#]+)/);
+    if (match) slug = match[1];
+  }
+
   if (!slug) {
     // fallback to default meta tags
-    return new Response(`<!DOCTYPE html>
-<html lang=\"en\">
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.status(200).send(`<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset=\"UTF-8\" />
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digital Business Card Builder - SCC Infotech LLP</title>
-  <meta name=\"description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
-  <meta property=\"og:title\" content=\"Digital Business Card Builder - SCC Infotech LLP\" />
-  <meta property=\"og:description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
-  <meta property=\"og:image\" content=\"https://businesscardsscc.vercel.app/DBCLOGO_2.png\" />
-  <meta property=\"og:url\" content=\"https://businesscardsscc.vercel.app\" />
-  <meta property=\"og:type\" content=\"website\" />
-  <meta name=\"twitter:card\" content=\"summary_large_image\" />
-  <meta name=\"twitter:title\" content=\"Digital Business Card Builder - SCC Infotech LLP\" />
-  <meta name=\"twitter:description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
-  <meta name=\"twitter:image\" content=\"https://businesscardsscc.vercel.app/DBCLOGO_2.png\" />
-  <meta name=\"twitter:site\" content=\"@sccinfotech\" />
+  <meta name="description" content="AI-powered platform for creating and sharing professional digital business cards." />
+  <meta property="og:title" content="Digital Business Card Builder - SCC Infotech LLP" />
+  <meta property="og:description" content="AI-powered platform for creating and sharing professional digital business cards." />
+  <meta property="og:image" content="https://businesscardsscc.vercel.app/DBCLOGO_2.png" />
+  <meta property="og:url" content="https://businesscardsscc.vercel.app" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Digital Business Card Builder - SCC Infotech LLP" />
+  <meta name="twitter:description" content="AI-powered platform for creating and sharing professional digital business cards." />
+  <meta name="twitter:image" content="https://businesscardsscc.vercel.app/DBCLOGO_2.png" />
+  <meta name="twitter:site" content="@sccinfotech" />
 </head>
 <body>
   <p>Redirecting to your card...</p>
 </body>
-</html>`, {
-      status: 200,
-      headers: {
-        'content-type': 'text/html',
-        'cache-control': 'public, max-age=60',
-      },
-    });
+</html>`);
+    return;
   }
 
   // Fetch card data from Supabase REST API
@@ -74,22 +75,22 @@ export default async function handler(req) {
 
   // HTML with meta tags
   const html = `<!DOCTYPE html>
-<html lang=\"en\">
+<html lang="en">
 <head>
-  <meta charset=\"UTF-8\" />
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
-  <meta name=\"description\" content=\"${description}\" />
-  <meta property=\"og:title\" content=\"${title}\" />
-  <meta property=\"og:description\" content=\"${description}\" />
-  <meta property=\"og:image\" content=\"${image}\" />
-  <meta property=\"og:url\" content=\"${cardUrl}\" />
-  <meta property=\"og:type\" content=\"website\" />
-  <meta name=\"twitter:card\" content=\"summary_large_image\" />
-  <meta name=\"twitter:title\" content=\"${title}\" />
-  <meta name=\"twitter:description\" content=\"${description}\" />
-  <meta name=\"twitter:image\" content=\"${image}\" />
-  <meta name=\"twitter:site\" content=\"@sccinfotech\" />
+  <meta name="description" content="${description}" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${image}" />
+  <meta property="og:url" content="${cardUrl}" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${image}" />
+  <meta name="twitter:site" content="@sccinfotech" />
   <!-- Debug: ${fetchError ? 'Supabase fetch error' : 'OK'} -->
   <script>window.location.replace('${cardUrl}');</script>
 </head>
@@ -98,11 +99,7 @@ export default async function handler(req) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'content-type': 'text/html',
-      'cache-control': 'public, max-age=60',
-    },
-  });
-}
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  res.status(200).send(html);
+};
