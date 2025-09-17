@@ -17,62 +17,100 @@ export default async function handler(req) {
   // Fetch card data from Supabase REST API
   let data = null;
   try {
-    const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/business_cards?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&select=id,name,company,position,avatar_url,bio`,
-      {
+    if (!slug) {
+      // fallback to default meta tags
+      return new Response(`<!DOCTYPE html>
+  <html lang=\"en\">
+  <head>
+    <meta charset=\"UTF-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+    <title>Digital Business Card Builder - SCC Infotech LLP</title>
+    <meta name=\"description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
+    <meta property=\"og:title\" content=\"Digital Business Card Builder - SCC Infotech LLP\" />
+    <meta property=\"og:description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
+    <meta property=\"og:image\" content=\"https://businesscardsscc.vercel.app/DBCLOGO_2.png\" />
+    <meta property=\"og:url\" content=\"https://businesscardsscc.vercel.app\" />
+    <meta property=\"og:type\" content=\"website\" />
+    <meta name=\"twitter:card\" content=\"summary_large_image\" />
+    <meta name=\"twitter:title\" content=\"Digital Business Card Builder - SCC Infotech LLP\" />
+    <meta name=\"twitter:description\" content=\"AI-powered platform for creating and sharing professional digital business cards.\" />
+    <meta name=\"twitter:image\" content=\"https://businesscardsscc.vercel.app/DBCLOGO_2.png\" />
+    <meta name=\"twitter:site\" content=\"@sccinfotech\" />
+  </head>
+  <body>
+    <p>Redirecting to your card...</p>
+  </body>
+  </html>`, {
+        status: 200,
         headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'content-type': 'text/html',
+          'cache-control': 'public, max-age=60',
         },
-      }
-    );
-    const arr = await resp.json();
-    data = arr[0];
-  } catch (e) {
-    data = null;
+      });
+    }
+
+    // Fetch card data from Supabase REST API
+    let data = null;
+    let fetchError = null;
+    try {
+      const resp = await fetch(
+        `${SUPABASE_URL}/rest/v1/business_cards?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&select=id,title,company,position,avatar_url,bio`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
+      );
+      const arr = await resp.json();
+      data = arr[0];
+    } catch (e) {
+      fetchError = e;
+      data = null;
+    }
+
+    let title = 'Digital Business Card Builder - SCC Infotech LLP';
+    let description = 'AI-powered platform for creating and sharing professional digital business cards.';
+    let image = 'https://businesscardsscc.vercel.app/DBCLOGO_2.png';
+    let cardUrl = `https://businesscardsscc.vercel.app/c/${slug}`;
+
+    if (data) {
+      title = data.title || title;
+      description = `${data.position || ''}${data.company ? ' at ' + data.company : ''}`.trim() || description;
+      image = data.avatar_url || image;
+    }
+
+    // HTML with meta tags
+    const html = `<!DOCTYPE html>
+  <html lang=\"en\">
+  <head>
+    <meta charset=\"UTF-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+    <title>${title}</title>
+    <meta name=\"description\" content=\"${description}\" />
+    <meta property=\"og:title\" content=\"${title}\" />
+    <meta property=\"og:description\" content=\"${description}\" />
+    <meta property=\"og:image\" content=\"${image}\" />
+    <meta property=\"og:url\" content=\"${cardUrl}\" />
+    <meta property=\"og:type\" content=\"website\" />
+    <meta name=\"twitter:card\" content=\"summary_large_image\" />
+    <meta name=\"twitter:title\" content=\"${title}\" />
+    <meta name=\"twitter:description\" content=\"${description}\" />
+    <meta name=\"twitter:image\" content=\"${image}\" />
+    <meta name=\"twitter:site\" content=\"@sccinfotech\" />
+    <!-- Debug: ${fetchError ? 'Supabase fetch error' : 'OK'} -->
+    <script>window.location.replace('${cardUrl}');</script>
+  </head>
+  <body>
+    <p>Redirecting to your card...</p>
+  </body>
+  </html>`;
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html',
+        'cache-control': 'public, max-age=60',
+      },
+    });
   }
-
-  if (!data) {
-    // fallback to default index.html
-    return fetch(new URL('/', req.url));
-  }
-
-  // Build meta tags
-  const title = data.name || 'Digital Business Card';
-  const description = `${data.position || ''}${data.company ? ' at ' + data.company : ''}`.trim() || 'View my digital business card!';
-  const image = data.avatar_url || 'https://businesscardsscc.vercel.app/DBCLOGO_2.png';
-  const cardUrl = `https://businesscardsscc.vercel.app/c/${slug}`;
-
-  // HTML with meta tags
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
-  <meta name="description" content="${description}" />
-  <meta property="og:title" content="${title}" />
-  <meta property="og:description" content="${description}" />
-  <meta property="og:image" content="${image}" />
-  <meta property="og:url" content="${cardUrl}" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title}" />
-  <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${image}" />
-  <meta name="twitter:site" content="@sccinfotech" />
-  <script>window.location.replace('${cardUrl}');</script>
-</head>
-<body>
-  <p>Redirecting to your card...</p>
-</body>
-</html>`;
-
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'content-type': 'text/html',
-      'cache-control': 'public, max-age=60',
-    },
-  });
-}
