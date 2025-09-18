@@ -772,7 +772,7 @@ export const PublicCard: React.FC = () => {
                 </div>
               )}
 
-              {/* Reviews */}
+             {/* Reviews */}
               {reviewLinks.length > 0 && (
                 <div
                   ref={cardRef}
@@ -787,21 +787,25 @@ export const PublicCard: React.FC = () => {
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
                     <Star className="w-5 h-5 text-yellow-600" /> Reviews
                   </h3>
-                  <div className="space-y-3">
+                  <div
+                    className="flex flex-row gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:gap-4 md:overflow-x-visible"
+                    style={{scrollbarWidth: 'thin'}}
+                  >
                     {reviewLinks.map((r) => (
                       <a
                         key={r.id}
                         href={r.review_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block p-4 border border-gray-200 rounded-xl hover:shadow-md"
+                        className="min-w-[260px] max-w-xs w-full block p-4 border border-gray-200 rounded-xl hover:shadow-md bg-white/80"
+                        style={{ flex: '0 0 auto' }}
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
                             <Star className="w-5 h-5 text-yellow-600" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-700">
+                            <h4 className="font-medium text-gray-700 truncate">
                               {r.title}
                             </h4>
                             <p className="text-xs text-gray-500">

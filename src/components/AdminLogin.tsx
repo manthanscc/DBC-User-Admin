@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Eye, EyeOff, Shield } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const ADMIN_CREDENTIALS = {
   email: 'scc@gmail.com',
@@ -57,8 +57,12 @@ export const AdminLogin: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-6 shadow-2xl">
-            <Shield className="w-10 h-10 text-white" />
+          <div className="mb-6 flex justify-center">
+            <img
+              src="/scc.png"
+              alt="Admin Logo"
+              className="w-20 h-20 object-contain rounded-2xl shadow-2xl bg-white/80 p-2"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Admin Portal

@@ -275,19 +275,19 @@ export const AnalyticsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 md:space-y-10 mx-auto px-2 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+  <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600">Comprehensive insights into your digital business cards performance</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-1">Analytics Dashboard</h1>
+          <p className="text-base text-gray-500">Comprehensive insights into your digital business cards' performance</p>
         </div>
         
-        <div className="flex gap-3">
+  <div className="flex gap-3 items-center">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -297,7 +297,7 @@ export const AnalyticsPage: React.FC = () => {
           
           <button
             onClick={exportData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <Download className="w-4 h-4" />
             Export
@@ -307,7 +307,7 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+        <nav className="flex space-x-4 md:space-x-8">
           {[
             { id: 'overview', label: 'Overview', icon: BarChart3 },
             { id: 'engagement', label: 'Engagement', icon: MousePointer },
@@ -319,10 +319,10 @@ export const AnalyticsPage: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`flex items-center gap-2 py-3 px-2 border-b-2 font-semibold text-base transition-colors rounded-t-md focus:outline-none ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-700 bg-blue-50 shadow-sm'
+                    : 'border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-200 bg-transparent'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -335,10 +335,10 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Views</p>
@@ -360,7 +360,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">QR Scans</p>
@@ -378,7 +378,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Social Clicks</p>
@@ -396,7 +396,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Contact Actions</p>
@@ -416,73 +416,45 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           {/* Views Over Time Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Views Over Time</h3>
-            <div className="h-64 bg-gray-50 rounded-lg p-4">
+            <div className="h-64 bg-gray-50 rounded-xl p-4">
               <div className="h-full flex items-end justify-between gap-2">
-                {analytics.viewsOverTime.map((data, index) => {
-                  const maxViews = Math.max(...analytics.viewsOverTime.map(d => d.views));
-                  const height = maxViews > 0 ? (data.views / maxViews) * 100 : 0;
-                  
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div
-                        className="w-full bg-blue-500 rounded-t-md min-h-[4px] transition-all duration-300 hover:bg-blue-600"
-                        style={{ height: `${Math.max(height, 4)}%` }}
-                        title={`${data.date}: ${data.views} views`}
-                      />
-                      <div className="mt-2 text-xs text-gray-600 text-center">
-                        <div className="font-medium">{data.views}</div>
-                        <div className="text-gray-400">{new Date(data.date).getDate()}</div>
+                {(analytics.viewsOverTime && analytics.viewsOverTime.length > 0) ? (
+                  analytics.viewsOverTime.map((data, index) => {
+                    const maxViews = Math.max(...analytics.viewsOverTime.map(d => d.views));
+                    const height = maxViews > 0 ? (data.views / maxViews) * 100 : 0;
+                    return (
+                      <div key={data.date + '-' + index} className="flex-1 flex flex-col items-center">
+                        <div
+                          className="w-full bg-blue-500 rounded-t-md min-h-[4px] transition-all duration-300 hover:bg-blue-600"
+                          style={{ height: `${Math.max(height, 4)}%` }}
+                          title={`${data.date}: ${data.views} views`}
+                        />
+                        <div className="mt-2 text-xs text-gray-600 text-center">
+                          <div className="font-medium">{data.views}</div>
+                          <div className="text-gray-400">{new Date(data.date).getDate()}</div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="w-full text-center text-gray-400">No data available</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Top Locations */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              Top Locations
-            </h3>
-            <div className="space-y-3">
-              {analytics.locationData.map((location, index) => (
-                <div key={location.country} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold text-blue-600">{index + 1}</span>
-                    </div>
-                    <span className="font-medium text-gray-900">{location.country}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${(location.views / analytics.locationData[0].views) * 100}%`
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium text-gray-600 w-12 text-right">
-                      {formatNumber(location.views)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                
         </div>
       )}
 
       {/* Engagement Tab */}
       {activeTab === 'engagement' && (
-        <div className="space-y-6">
+  <div className="space-y-8">
           {/* Social Media Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Social Media Clicks</h3>
               <div className="space-y-4">
                 {analytics.socialClicksBreakdown.map((social) => (
@@ -513,7 +485,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Actions</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
@@ -562,37 +534,43 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           {/* Hourly Activity Heatmap */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-600" />
               Activity by Hour
             </h3>
             <div className="grid grid-cols-12 gap-2">
-              {analytics.hourlyActivity.map((data) => {
-                const maxViews = Math.max(...analytics.hourlyActivity.map(d => d.views));
-                const intensity = data.views / maxViews;
-                
-                return (
-                  <div key={data.hour} className="text-center">
-                    <div
-                      className="w-full h-8 rounded mb-2 transition-all duration-200 hover:scale-110"
-                      style={{
-                        backgroundColor: `rgba(59, 130, 246, ${intensity})`,
-                        border: '1px solid rgba(59, 130, 246, 0.2)'
-                      }}
-                      title={`${data.hour}:00 - ${data.views} views`}
-                    />
-                    <span className="text-xs text-gray-500">{data.hour}</span>
-                  </div>
-                );
-              })}
+              {(analytics.hourlyActivity && analytics.hourlyActivity.length > 0) ? (
+                analytics.hourlyActivity.map((data) => {
+                  const maxViews = Math.max(...analytics.hourlyActivity.map(d => d.views));
+                  const intensity = maxViews > 0 ? data.views / maxViews : 0;
+                  return (
+                    <div key={data.hour} className="text-center">
+                      <div
+                        className="w-full h-8 rounded mb-2 transition-all duration-200 hover:scale-110"
+                        style={{
+                          backgroundColor: `rgba(59, 130, 246, ${intensity})`,
+                          border: '1px solid rgba(59, 130, 246, 0.2)'
+                        }}
+                        title={`${data.hour}:00 - ${data.views} views`}
+                      />
+                      <span className="text-xs text-gray-500">{data.hour}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="col-span-12 text-center text-gray-400">No data available</div>
+              )}
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              Peak activity hours: {analytics.hourlyActivity
-                .sort((a, b) => b.views - a.views)
-                .slice(0, 3)
-                .map(d => `${d.hour}:00`)
-                .join(', ')}
+              Peak activity hours: {(analytics.hourlyActivity && analytics.hourlyActivity.length > 0)
+                ? analytics.hourlyActivity
+                    .slice()
+                    .sort((a, b) => b.views - a.views)
+                    .slice(0, 3)
+                    .map(d => `${d.hour}:00`)
+                    .join(', ')
+                : 'N/A'}
             </p>
           </div>
         </div>
@@ -600,10 +578,10 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Performance Tab */}
       {activeTab === 'performance' && (
-        <div className="space-y-6">
+  <div className="space-y-8">
           {/* Card Status Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Published Cards</p>
@@ -615,7 +593,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Draft Cards</p>
@@ -627,7 +605,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Cards</p>
@@ -641,14 +619,14 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           {/* Top Performing Cards */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-600" />
               Top Performing Cards
             </h3>
             <div className="space-y-4">
               {analytics.topCards.map((card, index) => (
-                <div key={card.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div key={card.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors shadow-sm">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
@@ -680,7 +658,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           {/* Conversion Funnel */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Conversion Funnel</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
@@ -725,31 +703,42 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Growth Tab */}
       {activeTab === 'growth' && (
-        <div className="space-y-6">
+  <div className="space-y-8">
           {/* Recent Activity Feed */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-600" />
               Recent Activity
             </h3>
-            <div className="space-y-3">
-              {analytics.recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">
-                      Card <span className="font-medium">"{activity.cardTitle}"</span> was {activity.action}
-                    </p>
-                    <p className="text-xs text-gray-500">{formatTimeAgo(activity.timestamp)}</p>
+            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm">
+              <div style={{ maxHeight: '260px', overflowY: 'auto' }} className="divide-y divide-gray-200">
+                {analytics.recentActivity.slice(0, 5).map((activity, idx, arr) => (
+                  <div
+                    key={activity.id}
+                    className={
+                      `flex items-center gap-4 px-5 py-4 transition-colors duration-150 ` +
+                      `hover:bg-blue-100/60 ${idx !== arr.length - 1 ? '' : ''}`
+                    }
+                  >
+                    <div className="w-3 h-3 bg-blue-600 rounded-full shrink-0 shadow" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base text-gray-900 truncate">
+                        Card <span className="font-semibold text-blue-700">"{activity.cardTitle}"</span> was <span className="capitalize text-blue-600">{activity.action}</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(activity.timestamp)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+                {analytics.recentActivity.length === 0 && (
+                  <div className="text-center text-gray-400 py-8">No recent activity</div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Growth Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Growth Summary</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -777,7 +766,7 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Insights</h3>
               <div className="space-y-4">
                 <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">

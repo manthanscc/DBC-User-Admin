@@ -203,12 +203,17 @@ const LAYOUTS: Array<{
   },
 ];
 
+
+import { useNavigate, useParams } from "react-router-dom";
+
 export const CardEditor: React.FC<CardEditorProps> = ({
   existingCard,
   onSave,
   onCancel,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const params = useParams();
   const [activeTab, setActiveTab] = useState<
     "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced"
   >("basic");
@@ -226,7 +231,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
   const [formData, setFormData] = useState<FormData>({
     title: existingCard?.title || "",
-    username: existingCard?.slug || "",
+    username: existingCard?.slug || (params.username || ""),
     globalUsername: "",
     company: existingCard?.company || "",
     tagline: existingCard?.bio || "",
@@ -289,10 +294,16 @@ export const CardEditor: React.FC<CardEditorProps> = ({
   };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      // If username changes, update the route
+      if (field === "username" && value && value !== prev.username) {
+        navigate(`/user-admin/${value}`);
+      }
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
 
   const handleAutoSave = async () => {
@@ -376,14 +387,8 @@ export const CardEditor: React.FC<CardEditorProps> = ({
         alert("Failed to save card. Please try again.");
         return;
       }
-
-      if (result.data) {
-        setCardId(result.data.id);
-      }
-
       // Show success animation
       setShowSuccessAnimation(true);
-
       // Hide animation after 3 seconds and call onSave
       setTimeout(() => {
         setShowSuccessAnimation(false);
@@ -563,7 +568,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
           url: newUrl,
           is_auto_synced: false, // Mark as custom when manually edited
         })
-        .eq("id", linkId);
+        .eq("id", linkId);x
 
       if (error) {
         console.error("Error updating social link:", error);

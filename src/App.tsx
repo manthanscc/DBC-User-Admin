@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
         element={<Navigate to="/admin-scc/login" replace />} 
       />
       <Route
-        path="/user-admin"
+        path="/user-admin/:username?"
         element={
           <ProtectedRoute>
             <AdminPanel />

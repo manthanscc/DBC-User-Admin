@@ -52,6 +52,7 @@ interface ProductService {
     button_text: string;
     is_active: boolean;
   }>;
+  text_alignment?: 'left' | 'center' | 'right';
 }
 
 interface Review {
@@ -118,6 +119,52 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<any>> = {
   WhatsApp: MessageCircle,
   Telegram: MessageCircle,
   "Custom Link": ExternalLink,
+};
+
+// --- Render Product Description (from PublicCard) ---
+const renderProductDescription = (text: string, align: string = "left") => {
+  const cls =
+    align === "center"
+      ? "text-center"
+      : align === "right"
+      ? "text-right"
+      : "text-left";
+  return (
+    <div className={`${cls} whitespace-pre-wrap leading-relaxed text-sm`}>
+      {text.split("\n").map((line, i) => {
+        const toHtml = (content: string) =>
+          content
+            .replace(
+              /\*\*(.*?)\*\*/g,
+              '<strong class="font-semibold text-gray-900">$1</strong>'
+            )
+            .replace(
+              /\*(.*?)\*/g,
+              '<em class="italic text-gray-700">$1</em>'
+            );
+        if (line.trim().startsWith("• ")) {
+          return (
+            <div key={i} className="flex items-start gap-2 mb-2">
+              <span className="text-blue-600 font-bold mt-0.5 flex-shrink-0">•</span>
+              <span
+                className="flex-1"
+                dangerouslySetInnerHTML={{
+                  __html: toHtml(line.replace("• ", "")),
+                }}
+              />
+            </div>
+          );
+        }
+        return (
+          <div key={i} className={line.trim() === "" ? "mb-3" : "mb-1"}>
+            {line.trim() !== "" && (
+              <span dangerouslySetInnerHTML={{ __html: toHtml(line) }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 export const CardPreview: React.FC<CardPreviewProps> = ({
@@ -211,13 +258,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
     ));
   };
 
-  const renderFormattedText = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^• (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-  };
+  // (removed unused renderFormattedText)
 
   // Full Preview Modal Component
   const FullPreviewModal = () => (
@@ -233,46 +274,32 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-
         {/* Full Preview Content */}
         <div className="p-6">
           <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 rounded-xl">
-            <div className="max-w-4xl mx-auto">
-              {/* Header */}
-              {/* <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  {formData.title || "Your Name"}
-                </h1>
-                <p className="text-xl text-gray-600">
-                  {formData.profession && formData.company
-                    ? `${formData.profession} at ${formData.company}`
-                    : formData.profession || formData.company || "Professional"}
-                </p>
-              </div> */}
-
-              {/* Main Card */}
+            <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 {/* Profile Section */}
                 <div className="lg:col-span-1">
                   <div
-                    className={`p-8 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
+                    className={`w-full p-8 ${getCardShapeClasses()} ${getStyleClasses()} ${getLayoutClasses()}`}
                     style={{
                       backgroundColor: formData.theme.background,
                       color: formData.theme.text,
                       fontFamily: `'${formData.layout.font}', sans-serif`,
+                      borderColor: formData.theme.primary + "50",
                     }}
                   >
-                    {/* Avatar */}
                     {formData.avatar_url ? (
                       <img
                         src={formData.avatar_url}
                         alt="Profile"
-                        className="w-36 h-36 rounded-full object-cover mb-6 border-4"
+                        className="w-36 h-36 rounded-full object-cover mx-auto mb-4 border-4"
                         style={{ borderColor: formData.theme.primary }}
                       />
                     ) : (
                       <div
-                        className="w-32 h-32 rounded-full mb-6 flex items-center justify-center text-white font-bold text-3xl border-4"
+                        className="w-36 h-36 rounded-full mx-auto mb-6 flex items-center justify-center text-white font-bold text-3xl border-4"
                         style={{
                           backgroundColor: formData.theme.primary,
                           borderColor: formData.theme.secondary,
@@ -285,16 +312,22 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
                         )}
                       </div>
                     )}
-
-                    {/* Name and Bio */}
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <h2
                         className="text-2xl font-bold mb-2"
                         style={{ color: formData.theme.text }}
                       >
-                        {formData.title || "Your Name"}
+                        {formData.title || "Professional"}
                       </h2>
-                      {formData.profession && (
+                      {formData.profession && formData.company && (
+                        <p
+                          className="text-lg font-medium mb-1"
+                          style={{ color: formData.theme.secondary }}
+                        >
+                          {formData.profession} at {formData.company}
+                        </p>
+                      )}
+                      {formData.profession && !formData.company && (
                         <p
                           className="text-lg font-medium mb-1"
                           style={{ color: formData.theme.secondary }}
@@ -302,10 +335,10 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
                           {formData.profession}
                         </p>
                       )}
-                      {formData.company && (
+                      {!formData.profession && formData.company && (
                         <p
-                          className="text-base opacity-80 mb-2"
-                          style={{ color: formData.theme.text }}
+                          className="text-lg font-medium mb-1"
+                          style={{ color: formData.theme.secondary }}
                         >
                           {formData.company}
                         </p>
@@ -319,166 +352,126 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
                         </p>
                       )}
                     </div>
-
-                    {/* Contact Info */}
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-3 mb-0">
                       {formData.email && (
                         <a
                           href={`mailto:${formData.email}`}
-                          className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-black hover:bg-opacity-5"
+                          className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
                         >
-                          <Mail
-                            className="w-5 h-5"
-                            style={{ color: formData.theme.primary }}
-                          />
-                          <span className="text-sm">{formData.email}</span>
+                          <Mail className="w-5 h-5" style={{ color: formData.theme.primary }} />
+                          <span className="text-sm text-gray-500 break-all">{formData.email}</span>
                         </a>
                       )}
+                      {formData.address && formData.map_link && typeof formData.map_link === "string" && formData.map_link.trim() !== "" ? (
+                        <a
+                          href={formData.map_link as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
+                        >
+                          <MapPin className="w-5 h-5" style={{ color: formData.theme.primary }} />
+                          <span className="text-sm text-gray-500">{formData.address}</span>
+                        </a>
+                      ) : formData.address ? (
+                        <p className="text-sm mb-2">{formData.address}</p>
+                      ) : null}
                       {formData.phone && (
                         <a
                           href={`tel:${formData.phone}`}
-                          className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-black hover:bg-opacity-5"
+                          className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
                         >
-                          <Phone
-                            className="w-5 h-5"
-                            style={{ color: formData.theme.primary }}
-                          />
-                          <span className="text-sm">{formData.phone}</span>
+                          <Phone className="w-5 h-5" style={{ color: formData.theme.primary }} />
+                          <span className="text-sm text-gray-500">{formData.phone}</span>
                         </a>
                       )}
                       {formData.whatsapp && (
                         <a
-                          href={`https://wa.me/${formData.whatsapp.replace(
-                            /[^0-9]/g,
-                            ""
-                          )}`}
+                          href={`https://wa.me/${formData.whatsapp.replace(/[^0-9]/g, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-black hover:bg-opacity-5"
+                          className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
                         >
-                          <MessageCircle
-                            className="w-5 h-5"
-                            style={{ color: formData.theme.primary }}
-                          />
-                          <span className="text-sm">WhatsApp</span>
+                          <MessageCircle className="w-5 h-5" style={{ color: formData.theme.primary }} />
+                          <span className="text-sm text-gray-500">Send message</span>
                         </a>
                       )}
                       {formData.website && (
                         <a
-                          href={
-                            formData.website.startsWith("http")
-                              ? formData.website
-                              : `https://${formData.website}`
-                          }
+                          href={formData.website.startsWith("http") ? formData.website : `https://${formData.website}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-black hover:bg-opacity-5"
+                          className="flex items-center gap-3 p-2 border border-gray-200 rounded-xl hover:shadow-md"
                         >
-                          <Globe
-                            className="w-5 h-5"
-                            style={{ color: formData.theme.primary }}
-                          />
-                          <span className="text-sm">{formData.website}</span>
+                          <Globe className="w-5 h-5" style={{ color: formData.theme.primary }} />
+                          <span className="text-sm text-gray-500 break-all">{formData.website}</span>
                         </a>
                       )}
-                      {formData.address && (
-                        <div className="flex items-start gap-3 p-3 rounded-lg">
-                          <MapPin
-                            className="w-5 h-5 mt-0.5"
-                            style={{ color: formData.theme.primary }}
-                          />
-                          <span className="text-sm">{formData.address}</span>
-                        </div>
-                      )}
                     </div>
-
-                    {/* Social Links */}
-                    {socialLinks.length > 0 && (
-                      <div className="flex gap-4 mt-2 flex-wrap items-center justify-start">
+                  </div>
+                </div>
+                {/* Content Section */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Get In Touch Social Links - improved grid and icon color */}
+                  {socialLinks.length > 0 && (
+                    <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+                      <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-blue-700">
+                        Get In Touch
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-8">
                         {socialLinks.map((link) => {
                           const Icon = SOCIAL_ICONS[link.platform] || Globe;
                           return (
-                            <a
-                              key={link.id}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-10 h-10 rounded-full flex items-center justify-center"
-                              style={{
-                                backgroundColor: formData.theme.primary,
-                                transition: "transform 0.15s",
-                              }}
-                              title={link.platform}
-                            >
-                              <Icon className="w-5 h-5 text-white" />
-                            </a>
+                            <div key={link.id} className="flex items-center gap-3">
+                              <Icon className="w-7 h-7 text-blue-500" />
+                              <div>
+                                <div className="font-medium text-base text-gray-800">{link.platform}</div>
+                                {link.username && (
+                                  <div className="text-sm text-gray-500">@{link.username}</div>
+                                )}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Content Section */}
-                <div className="lg:col-span-2 space-y-8">
-                  {/* Products/Services */}
+                    </div>
+                  )}
+                  {/* Products & Services */}
                   {products.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        Products & Services
+                    <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+                      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-600" /> Products & Services
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {products.filter(p => p.is_active).map((product) => (
-                          <div key={product.id} className="border border-gray-200 rounded-lg p-4">
-                            {/* Product Images */}
-                            {product.images && product.images.length > 0 && (
-                              <div className="mb-4">
-                                <div className="grid grid-cols-2 gap-2">
-                                  {product.images.slice(0, 4).map((image, index) => (
-                                    <div key={index} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                                      <img
-                                        src={image.image_url}
-                                        alt={image.alt_text || `${product.title} image ${index + 1}`}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                        }}
-                                      />
-                                    </div>
-                                  ))}
+                          <div key={product.id} className="border border-gray-200 rounded-xl p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
+                            <div className="grid grid-cols-2 gap-2 mb-4">
+                              {product.images && product.images.slice(0, 2).map((img, i) => (
+                                <div key={i} className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative cursor-pointer">
+                                  <img
+                                    src={img.image_url}
+                                    alt={img.alt_text || `${product.title} image ${i + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
-                                {product.images.length > 4 && (
-                                  <p className="text-xs text-gray-500 mt-2 text-center">
-                                    +{product.images.length - 4} more images
-                                  </p>
-                                )}
-                              </div>
-                            )}
-
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
-                                <h4 className="font-semibold text-gray-900">{product.title}</h4>
-                                {product.price && (
-                                  <p className="text-green-600 font-medium">{product.price}</p>
-                                )}
-                                {product.category && (
-                                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mt-1">
-                                    {product.category}
-                                  </span>
-                                )}
-                              </div>
-                              {product.is_featured && (
-                                <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                              )}
+                              ))}
                             </div>
-                            <div 
-                              className="mb-4"
-                            >
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-bold text-lg text-gray-900">{product.title}</h4>
+                              {product.is_featured && <Star className="w-5 h-5 text-yellow-500 fill-current" />}
+                            </div>
+                            {product.category && (
+                              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mb-2">
+                                {product.category}
+                              </span>
+                            )}
+                            {product.price && (
+                              <p className="text-green-600 font-bold text-base mb-2">{product.price}</p>
+                            )}
+                            <div className="text-xs mb-2" style={{ color: formData.theme.text }}>
                               {renderProductDescription(product.description, product.text_alignment)}
                             </div>
-                            {product.inquiries.filter(i => i.is_active).length > 0 && (
-                              <div className="flex flex-wrap gap-2">
+                            {product.inquiries && product.inquiries.filter(i => i.is_active).length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 mt-2">
                                 {product.inquiries.filter(i => i.is_active).map((inquiry, index) => (
                                   <a
                                     key={index}
@@ -506,61 +499,58 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
                       </div>
                     </div>
                   )}
-
                   {/* Media Gallery */}
                   {mediaItems.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        Gallery
+                    <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+                      <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-blue-700">
+                        <Play className="w-6 h-6 text-blue-600" /> Media Gallery
                       </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {mediaItems.slice(0, 6).map((item) => (
-                          <div key={item.id} className="relative group">
-                            {item.type === "image" ? (
+                      <div className="flex gap-6 overflow-x-auto pb-2">
+                        {mediaItems.map((item) => (
+                          <div key={item.id} className="relative group flex-shrink-0 aspect-video w-64">
+                            {item.type === "video" ? (
+                              <div className="relative aspect-video">
+                                <img
+                                  src={`https://img.youtube.com/vi/${item.url.split('v=')[1]?.split('&')[0] || ''}/hqdefault.jpg`}
+                                  alt={item.title}
+                                  className="w-full h-40 md:h-40 object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-10 rounded-lg flex items-center justify-center">
+                                  <Play className="w-10 h-10 text-white" />
+                                </div>
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="absolute inset-0 rounded-lg"
+                                />
+                              </div>
+                            ) : item.type === "image" ? (
                               <img
                                 src={item.url}
                                 alt={item.title}
-                                className="w-full h-32 object-cover rounded-lg"
+                                className="w-full h-48 object-cover rounded-lg"
                               />
-                            ) : item.type === "video" ? (
-                              <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <Play className="w-8 h-8 text-gray-600" />
-                              </div>
                             ) : (
-                              <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <FileText className="w-8 h-8 text-gray-600" />
+                              <div className="w-full h-48 bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
+                                <FileText className="w-12 h-12 text-gray-600 mb-2" />
+                                <span className="text-sm text-gray-600">{item.title}</span>
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-                              <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                {item.title}
-                              </span>
-                            </div>
                           </div>
                         ))}
                       </div>
-                      {mediaItems.length > 6 && (
-                        <div className="text-center mt-4">
-                          <span className="text-sm text-gray-600">
-                            +{mediaItems.length - 6} more items
-                          </span>
-                        </div>
-                      )}
                     </div>
                   )}
-
                   {/* Reviews */}
                   {reviews.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        Customer Reviews
+                    <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
+                      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-600" /> Customer Reviews
                       </h3>
                       <div className="space-y-4">
                         {reviews.slice(0, 3).map((review) => (
-                          <div
-                            key={review.id}
-                            className="border-l-4 border-yellow-400 pl-4"
-                          >
+                          <div key={review.id} className="border-l-4 border-yellow-400 pl-4">
                             <div className="flex items-center gap-2 mb-2">
                               <div className="flex">
                                 {renderStars(review.rating)}
@@ -945,7 +935,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
                       alt="QR Code"
                       className="w-16 h-16 rounded-md"
                       style={{
-                        boxShadow: Range,
+                        // boxShadow: Range, // removed invalid style
                         background: "transparent",
                       }}
                     />
@@ -1057,14 +1047,14 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
           </div>
         </div>
 
-        {/* Full Preview Button */}
+        {/* Full Preview Button
         <button
           onClick={() => setShowFullPreview(true)}
           className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2"
         >
           <Maximize2 className="w-4 h-4" />
           View Full Preview
-        </button>
+        </button> */}
 
         {formData.username && (
           <a

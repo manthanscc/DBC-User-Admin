@@ -43,78 +43,110 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({ analytics }) => 
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Analytics Overview</h2>
-        <p className="text-gray-600">Comprehensive insights into platform usage and performance</p>
-      </div>
+      {/* <div className="mb-2">
+        <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">Analytics Overview</h2>
+        <p className="text-blue-700/80 text-base mt-1">Comprehensive insights into platform usage and performance</p>
+      </div> */}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* Total Users */}
+        <div className="bg-gradient-to-br from-blue-100 to-white rounded-2xl shadow-lg border border-blue-200 p-8 flex flex-col justify-between hover:scale-[1.02] transition-transform">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900">{analytics.totalUsers}</p>
+              <p className="text-base font-semibold text-blue-700 mb-1">Total Users</p>
+              <p className="text-4xl font-extrabold text-blue-900 drop-shadow">{analytics.totalUsers}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="w-14 h-14 bg-blue-200 rounded-xl flex items-center justify-center shadow">
+              <Users className="w-7 h-7 text-blue-700" />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <TrendingUp className={`w-4 h-4 ${growthPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-            <span className={`text-sm ${growthPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="mt-5 flex items-center gap-2">
+            <TrendingUp className={`w-5 h-5 ${growthPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+            <span className={`text-base font-medium ${growthPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {growthPercentage >= 0 ? '+' : ''}{growthPercentage.toFixed(1)}% from last month
             </span>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Cards</p>
-              <p className="text-3xl font-bold text-gray-900">{analytics.totalCards}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-500" />
-            <span className="text-sm text-blue-600">{cardPublishRate}% published</span>
+          {/* Progress bar for users (relative to 1000 as a visual max) */}
+          <div className="mt-4 h-2 w-full bg-blue-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-500 transition-all duration-700"
+              style={{ width: `${Math.min((analytics.totalUsers / 1000) * 100, 100)}%` }}
+            />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* Total Cards */}
+        <div className="bg-gradient-to-br from-green-100 to-white rounded-2xl shadow-lg border border-green-200 p-8 flex flex-col justify-between hover:scale-[1.02] transition-transform">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Views</p>
-              <p className="text-3xl font-bold text-gray-900">{analytics.totalViews}</p>
+              <p className="text-base font-semibold text-green-700 mb-1">Total Cards</p>
+              <p className="text-4xl font-extrabold text-green-900 drop-shadow">{analytics.totalCards}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Eye className="w-6 h-6 text-purple-600" />
+            <div className="w-14 h-14 bg-green-200 rounded-xl flex items-center justify-center shadow">
+              <CreditCard className="w-7 h-7 text-green-700" />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-purple-500" />
-            <span className="text-sm text-purple-600">{avgViewsPerCard} avg per card</span>
+          <div className="mt-5 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-blue-500" />
+            <span className="text-base text-blue-600 font-medium">{cardPublishRate}% published</span>
+          </div>
+          {/* Progress bar for cards (relative to 1000 as a visual max) */}
+          <div className="mt-4 h-2 w-full bg-green-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-green-500 transition-all duration-700"
+              style={{ width: `${Math.min((analytics.totalCards / 1000) * 100, 100)}%` }}
+            />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {/* Total Views */}
+        <div className="bg-gradient-to-br from-purple-100 to-white rounded-2xl shadow-lg border border-purple-200 p-8 flex flex-col justify-between hover:scale-[1.02] transition-transform">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">New This Month</p>
-              <p className="text-3xl font-bold text-gray-900">{analytics.newUsersThisMonth}</p>
+              <p className="text-base font-semibold text-purple-700 mb-1">Total Views</p>
+              <p className="text-4xl font-extrabold text-purple-900 drop-shadow">{analytics.totalViews}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <UserCheck className="w-6 h-6 text-orange-600" />
+            <div className="w-14 h-14 bg-purple-200 rounded-xl flex items-center justify-center shadow">
+              <Eye className="w-7 h-7 text-purple-700" />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-orange-500" />
-            <span className="text-sm text-orange-600">New registrations</span>
+          <div className="mt-5 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-purple-500" />
+            <span className="text-base text-purple-600 font-medium">{avgViewsPerCard} avg per card</span>
+          </div>
+          {/* Progress bar for views (relative to 10000 as a visual max) */}
+          <div className="mt-4 h-2 w-full bg-purple-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-purple-500 transition-all duration-700"
+              style={{ width: `${Math.min((analytics.totalViews / 10000) * 100, 100)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* New This Month */}
+        <div className="bg-gradient-to-br from-orange-100 to-white rounded-2xl shadow-lg border border-orange-200 p-8 flex flex-col justify-between hover:scale-[1.02] transition-transform">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-base font-semibold text-orange-700 mb-1">New This Month</p>
+              <p className="text-4xl font-extrabold text-orange-900 drop-shadow">{analytics.newUsersThisMonth}</p>
+            </div>
+            <div className="w-14 h-14 bg-orange-200 rounded-xl flex items-center justify-center shadow">
+              <UserCheck className="w-7 h-7 text-orange-700" />
+            </div>
+          </div>
+          <div className="mt-5 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-orange-500" />
+            <span className="text-base text-orange-600 font-medium">New registrations</span>
+          </div>
+          {/* Progress bar for new users (relative to 100 as a visual max) */}
+          <div className="mt-4 h-2 w-full bg-orange-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-orange-500 transition-all duration-700"
+              style={{ width: `${Math.min((analytics.newUsersThisMonth / 100) * 100, 100)}%` }}
+            />
           </div>
         </div>
       </div>
@@ -128,13 +160,20 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({ analytics }) => 
             <div className="h-full flex items-end justify-between gap-2">
               {analytics.userGrowthData.map((data, index) => {
                 const maxUsers = Math.max(...analytics.userGrowthData.map(d => d.users));
-                const height = maxUsers > 0 ? (data.users / maxUsers) * 100 : 0;
-                
+                let height = 0;
+                if (maxUsers > 0) {
+                  height = (data.users / maxUsers) * 100;
+                }
+                // If value is nonzero, ensure a minimum visible height (e.g., 20%).
+                // If value is zero, set a very small height (e.g., 2%).
+                const minPercent = 20;
+                const zeroPercent = 2;
+                const barHeight = data.users > 0 ? Math.max(height, minPercent) : zeroPercent;
                 return (
                   <div key={index} className="flex-1 flex flex-col items-center">
                     <div
-                      className="w-full bg-blue-500 rounded-t-md min-h-[4px] transition-all duration-300 hover:bg-blue-600"
-                      style={{ height: `${Math.max(height, 4)}%` }}
+                      className="w-full bg-blue-500 rounded-t-md transition-all duration-300 hover:bg-blue-600"
+                      style={{ height: `${barHeight}%`, minHeight: data.users > 0 ? 16 : 2 }}
                       title={`${data.month}: ${data.users} users`}
                     />
                     <div className="mt-2 text-xs text-gray-600 text-center">
@@ -266,46 +305,6 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({ analytics }) => 
               <span className="text-sm text-gray-600">Conversion Rate</span>
               <span className="font-medium text-gray-900">{cardPublishRate}%</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Monthly Growth Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Monthly User Growth</h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4" />
-            Last 6 months
-          </div>
-        </div>
-        
-        <div className="h-80 bg-gray-50 rounded-lg p-6">
-          <div className="h-full flex items-end justify-between gap-4">
-            {analytics.userGrowthData.map((data, index) => {
-              const maxUsers = Math.max(...analytics.userGrowthData.map(d => d.users));
-              const height = maxUsers > 0 ? (data.users / maxUsers) * 100 : 0;
-              
-              return (
-                <div key={index} className="flex-1 flex flex-col items-center group">
-                  <div className="relative w-full">
-                    <div
-                      className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg min-h-[8px] transition-all duration-300 group-hover:from-blue-600 group-hover:to-blue-500 cursor-pointer"
-                      style={{ height: `${Math.max(height, 8)}%` }}
-                      title={`${data.month}: ${data.users} users`}
-                    />
-                    {/* Hover tooltip */}
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      {data.users} users
-                    </div>
-                  </div>
-                  <div className="mt-3 text-center">
-                    <div className="font-semibold text-gray-900 text-lg">{data.users}</div>
-                    <div className="text-xs text-gray-500 font-medium">{data.month}</div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </div>
