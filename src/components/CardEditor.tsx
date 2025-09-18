@@ -9,18 +9,12 @@ import {
   Share2,
   Globe,
   Lock,
-  AlertCircle,
   Upload,
   Download,
-  Copy,
   Trash2,
-  Plus,
   Settings,
-  Zap,
-  Sparkles,
   RefreshCw,
   FolderSync as Sync,
-  Check,
   ArrowRight,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
@@ -29,7 +23,7 @@ import { ImageUpload } from "./ImageUpload";
 import { CardPreview } from "./CardPreview";
 import { MediaUpload } from "./MediaUpload";
 import { ReviewsManager } from "./ReviewsManager";
-import { ProductsServicesManager } from './ProductsServicesManager';
+import { ProductsServicesManager } from "./ProductsServicesManager";
 import {
   generateSocialLink,
   SOCIAL_PLATFORMS,
@@ -155,7 +149,108 @@ const THEMES = [
     background: "#FFFFFF",
     text: "#1F2937",
   },
+  // Custom theme placeholder (not shown in grid)
 ];
+
+// Custom Color Picker Component
+const CustomThemePicker: React.FC<{
+  theme: FormData["theme"];
+  onChange: (theme: FormData["theme"]) => void;
+}> = ({ theme, onChange }) => {
+  return (
+    <div className="mt-6 p-6 bg-white rounded-2xl border border-blue-200 shadow-sm flex flex-col gap-6">
+      <h4 className="font-bold text-blue-900 text-lg mb-2 flex items-center gap-2">
+        🎨 Custom Theme Colors
+      </h4>
+      <div className="flex flex-wrap gap-6 justify-between">
+        {/* Primary Color */}
+        <div className="flex flex-col items-center flex-1 min-w-[120px]">
+          <label className="text-xs font-semibold text-gray-700 mb-2">
+            Primary
+          </label>
+          <div className="relative flex flex-col items-center">
+            <input
+              type="color"
+              value={theme.primary}
+              onChange={(e) =>
+                onChange({ ...theme, primary: e.target.value, name: "Custom" })
+              }
+              className="w-12 h-12 rounded-2 border-2 border-blue-300 shadow focus:ring-2 focus:ring-blue-400 cursor-pointer"
+              title="Pick primary color"
+            />
+            <span className="text-xs mt-2 text-gray-500">{theme.primary}</span>
+          </div>
+        </div>
+        {/* Secondary Color */}
+        <div className="flex flex-col items-center flex-1 min-w-[120px]">
+          <label className="text-xs font-semibold text-gray-700 mb-2">
+            Secondary
+          </label>
+          <div className="relative flex flex-col items-center">
+            <input
+              type="color"
+              value={theme.secondary}
+              onChange={(e) =>
+                onChange({
+                  ...theme,
+                  secondary: e.target.value,
+                  name: "Custom",
+                })
+              }
+              className="w-12 h-12 rounded-2 border-2 border-blue-300 shadow focus:ring-2 focus:ring-blue-400 cursor-pointer"
+              title="Pick secondary color"
+            />
+            <span className="text-xs mt-2 text-gray-500">
+              {theme.secondary}
+            </span>
+          </div>
+        </div>
+        {/* Background Color */}
+        <div className="flex flex-col items-center flex-1 min-w-[120px]">
+          <label className="text-xs font-semibold text-gray-700 mb-2">
+            Background
+          </label>
+          <div className="relative flex flex-col items-center">
+            <input
+              type="color"
+              value={theme.background}
+              onChange={(e) =>
+                onChange({
+                  ...theme,
+                  background: e.target.value,
+                  name: "Custom",
+                })
+              }
+              className="w-12 h-12 rounded-2 border-2 border-blue-300 shadow focus:ring-2 focus:ring-blue-400 cursor-pointer"
+              title="Pick background color"
+            />
+            <span className="text-xs mt-2 text-gray-500">
+              {theme.background}
+            </span>
+          </div>
+        </div>
+        {/* Text Color */}
+        <div className="flex flex-col items-center flex-1 min-w-[120px]">
+          <label className="text-xs font-semibold text-gray-700 mb-2">
+            Text
+          </label>
+          <div className="relative flex flex-col items-center">
+            <input
+              type="color"
+              value={theme.text}
+              onChange={(e) =>
+                onChange({ ...theme, text: e.target.value, name: "Custom" })
+              }
+              className="w-12 h-12 rounded-2 border-2 border-blue-300 shadow focus:ring-2 focus:ring-blue-400 cursor-pointer"
+              title="Pick text color"
+            />
+            <span className="text-xs mt-2 text-gray-500">{theme.text}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SHAPES = [
   { id: "rectangle", name: "Rectangle", preview: "rounded-lg" },
@@ -164,45 +259,66 @@ const SHAPES = [
   // { id: "hexagon", name: "Hexagon", preview: "rounded-3xl" },
 ];
 
-const LAYOUTS: Array<{
-  style: string;
-  alignment: string;
-  font: string;
-  name: string;
-}> = [
+// LAYOUTS: Used for default layout selection and reference
+const LAYOUTS = [
   {
     style: "modern",
     alignment: "center",
     font: "Inter",
-    name: "Modern Center",
   },
-  { style: "modern", alignment: "left", font: "Inter", name: "Modern Left" },
   {
     style: "classic",
-    alignment: "center",
+    alignment: "left",
     font: "Georgia",
-    name: "Classic Center",
   },
   {
     style: "minimal",
-    alignment: "left",
+    alignment: "center",
     font: "Helvetica",
-    name: "Minimal Left",
   },
   {
     style: "creative",
-    alignment: "center",
+    alignment: "right",
     font: "Poppins",
-    name: "Creative Center",
   },
   {
     style: "elegant",
-    alignment: "right",
+    alignment: "center",
     font: "Playfair Display",
-    name: "Elegant Right",
   },
 ];
 
+const LAYOUT_STYLES = [
+  { value: "modern", label: "Modern" },
+  { value: "classic", label: "Classic" },
+  { value: "minimal", label: "Minimal" },
+  { value: "creative", label: "Creative" },
+  { value: "elegant", label: "Elegant" },
+];
+const LAYOUT_ALIGNMENTS = [
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
+];
+const LAYOUT_FONTS = [
+  { value: "Inter", label: "Inter", style: { fontFamily: 'Inter, Arial, sans-serif' } },
+  { value: "Georgia", label: "Georgia", style: { fontFamily: 'Georgia, serif' } },
+  { value: "Helvetica", label: "Helvetica", style: { fontFamily: 'Helvetica, Arial, sans-serif' } },
+  { value: "Poppins", label: "Poppins", style: { fontFamily: 'Poppins, Arial, sans-serif' } },
+  { value: "Playfair Display", label: "Playfair Display", style: { fontFamily: 'Playfair Display, Georgia, serif' } },
+  { value: "Roboto", label: "Roboto", style: { fontFamily: 'Roboto, Arial, sans-serif' } },
+  { value: "Montserrat", label: "Montserrat", style: { fontFamily: 'Montserrat, Arial, sans-serif' } },
+{ value: "Raleway", label: "Raleway", style: { fontFamily: 'Raleway, Arial, sans-serif' } },
+{ value: "Lora", label: "Lora", style: { fontFamily: 'Lora, Georgia, serif' } },
+{ value: "Merriweather", label: "Merriweather", style: { fontFamily: 'Merriweather, Georgia, serif' } },
+{ value: "Nunito", label: "Nunito", style: { fontFamily: 'Nunito, Arial, sans-serif' } },
+{ value: "Oswald", label: "Oswald", style: { fontFamily: 'Oswald, Arial, sans-serif' } },
+{ value: "PT Serif", label: "PT Serif", style: { fontFamily: 'PT Serif, Georgia, serif' } },
+{ value: "Ubuntu", label: "Ubuntu", style: { fontFamily: 'Ubuntu, Arial, sans-serif' } },
+{ value: "Work Sans", label: "Work Sans", style: { fontFamily: 'Work Sans, Arial, sans-serif' } },
+{ value: "Source Sans Pro", label: "Source Sans Pro", style: { fontFamily: 'Source Sans Pro, Arial, sans-serif' } },
+
+];
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -215,7 +331,14 @@ export const CardEditor: React.FC<CardEditorProps> = ({
   const navigate = useNavigate();
   const params = useParams();
   const [activeTab, setActiveTab] = useState<
-    "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced"
+    | "basic"
+    | "contact"
+    | "social"
+    | "media"
+    | "products"
+    | "reviews"
+    | "design"
+    | "advanced"
   >("basic");
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
@@ -231,7 +354,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
   const [formData, setFormData] = useState<FormData>({
     title: existingCard?.title || "",
-    username: existingCard?.slug || (params.username || ""),
+    username: existingCard?.slug || params.username || "",
     globalUsername: "",
     company: existingCard?.company || "",
     tagline: existingCard?.bio || "",
@@ -568,7 +691,8 @@ export const CardEditor: React.FC<CardEditorProps> = ({
           url: newUrl,
           is_auto_synced: false, // Mark as custom when manually edited
         })
-        .eq("id", linkId);x
+        .eq("id", linkId);
+      x;
 
       if (error) {
         console.error("Error updating social link:", error);
@@ -636,7 +760,15 @@ export const CardEditor: React.FC<CardEditorProps> = ({
   };
 
   const tabs: Array<{
-    id: "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced";
+    id:
+      | "basic"
+      | "contact"
+      | "social"
+      | "media"
+      | "products"
+      | "reviews"
+      | "design"
+      | "advanced";
     label: string;
     icon: React.ElementType;
   }> = [
@@ -996,34 +1128,198 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
   const renderDesign = () => (
     <div className="space-y-8">
+        {/* Layout Selection - Separated */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Options</h3>
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Style */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
+            <div className="flex flex-wrap gap-2">
+              {LAYOUT_STYLES.map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => handleInputChange("layout", { ...formData.layout, style: s.value })}
+                  className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                    formData.layout.style === s.value
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-200 hover:border-blue-300 text-gray-700"
+                  }`}
+                  type="button"
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Alignment */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Alignment</label>
+            <div className="flex flex-wrap gap-2">
+              {LAYOUT_ALIGNMENTS.map((a) => (
+                <button
+                  key={a.value}
+                  onClick={() => handleInputChange("layout", { ...formData.layout, alignment: a.value })}
+                  className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                    formData.layout.alignment === a.value
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-200 hover:border-blue-300 text-gray-700"
+                  }`}
+                  type="button"
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Font */}
+          <div className="flex-1 min-w-[300px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Font</label>
+            <div
+              className=" flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-blue-50"
+              style={{ maxHeight: 196, minHeight: 100, paddingRight: 4 }}
+            >
+              {LAYOUT_FONTS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => handleInputChange("layout", { ...formData.layout, font: f.value })}
+                  className={`px-4 py-2 m-1 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                    formData.layout.font === f.value
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-200 hover:border-blue-300 text-gray-700"
+                  }`}
+                  type="button"
+                  style={{
+                    ...f.style,
+                    minWidth: 110,
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <style>{`
+              .scrollbar-thin::-webkit-scrollbar {
+                width: 8px;
+              }
+              .scrollbar-thin::-webkit-scrollbar-thumb {
+                background: #bfdbfe;
+                border-radius: 4px;
+              }
+              .scrollbar-thin::-webkit-scrollbar-track {
+                background: #f0f9ff;
+              }
+              .scrollbar-thin {
+                scrollbar-width: thin;
+                scrollbar-color: #bfdbfe #f0f9ff;
+              }
+            `}</style>
+          </div>
+        </div>
+      </div>
+
       {/* Theme Selection with Color Shades */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Theme</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Choose Theme
+        </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {THEMES.map((theme) => (
             <button
               key={theme.name}
               onClick={() => handleInputChange("theme", theme)}
               className={`p-3 rounded-xl border-2 shadow-sm flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                formData.theme.name === theme.name
+                formData.theme.name === theme.name &&
+                formData.theme.name !== "Custom"
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-blue-300"
               }`}
               style={{ minWidth: 0 }}
             >
               <div className="flex gap-1 mb-2">
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.primary }} title="Primary" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.secondary }} title="Secondary" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.background }} title="Background" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.text }} title="Text" />
+                <span
+                  className="w-4 h-4 rounded-full border border-gray-200"
+                  style={{ background: theme.primary }}
+                  title="Primary"
+                />
+                <span
+                  className="w-4 h-4 rounded-full border border-gray-200"
+                  style={{ background: theme.secondary }}
+                  title="Secondary"
+                />
+                <span
+                  className="w-4 h-4 rounded-full border border-gray-200"
+                  style={{ background: theme.background }}
+                  title="Background"
+                />
+                <span
+                  className="w-4 h-4 rounded-full border border-gray-200"
+                  style={{ background: theme.text }}
+                  title="Text"
+                />
               </div>
-              <p className="text-xs font-semibold text-gray-900 text-center whitespace-nowrap">{theme.name}</p>
+              <p className="text-xs font-semibold text-gray-900 text-center whitespace-nowrap">
+                {theme.name}
+              </p>
             </button>
           ))}
+          {/* Custom Theme Button */}
+          <button
+            key="Custom"
+            onClick={() =>
+              handleInputChange("theme", {
+                name: "Custom",
+                primary: formData.theme.primary || "#3B82F6",
+                secondary: formData.theme.secondary || "#1E40AF",
+                background: formData.theme.background || "#FFFFFF",
+                text: formData.theme.text || "#1F2937",
+              })
+            }
+            className={`p-3 rounded-xl border-2 shadow-sm flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-red-400 ${
+              formData.theme.name === "Custom"
+                ? "border-red-500 bg-red-50"
+                : "border-red-400 bg-red-50 hover:border-red-300"
+            }`}
+            style={{ minWidth: 0 }}
+          >
+            <div className="flex gap-1 mb-2">
+              <span
+                className="w-4 h-4 rounded-full border border-gray-200"
+                style={{ background: formData.theme.primary }}
+                title="Primary"
+              />
+              <span
+                className="w-4 h-4 rounded-full border border-gray-200"
+                style={{ background: formData.theme.secondary }}
+                title="Secondary"
+              />
+              <span
+                className="w-4 h-4 rounded-full border border-gray-200"
+                style={{ background: formData.theme.background }}
+                title="Background"
+              />
+              <span
+                className="w-4 h-4 rounded-full border border-gray-200"
+                style={{ background: formData.theme.text }}
+                title="Text"
+              />
+            </div>
+            <p className="text-xs font-semibold text-gray-900 text-center whitespace-nowrap">
+              Custom
+            </p>
+          </button>
         </div>
+        {/* Show custom color pickers if Custom is selected */}
+        {formData.theme.name === "Custom" && (
+          <CustomThemePicker
+            theme={formData.theme}
+            onChange={(t) => handleInputChange("theme", t)}
+          />
+        )}
       </div>
 
-      {/* Shape Selection - Mobile Friendly */}
+    
+         {/* Shape Selection - Mobile Friendly */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Card Shape</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1031,35 +1327,16 @@ export const CardEditor: React.FC<CardEditorProps> = ({
             <button
               key={shape.id}
               onClick={() => handleInputChange("shape", shape.id)}
-              className={`p-3 rounded-xl border-2 flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              className={`p-3 rounded-xl border-2 flex flex-row gap-2 items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                 formData.shape === shape.id
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-blue-300"
               }`}
             >
-              <div className={`w-14 h-8 bg-gray-200 mb-2 ${shape.preview}`} />
-              <span className="text-xs font-medium text-gray-900 text-center">{shape.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Layout Selection - Mobile Friendly */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Style</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {LAYOUTS.map((layout) => (
-            <button
-              key={layout.name}
-              onClick={() => handleInputChange("layout", layout)}
-              className={`p-3 rounded-xl border-2 text-left flex flex-col transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                formData.layout.name === layout.name
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-300"
-              }`}
-            >
-              <span className="font-medium text-gray-900">{layout.name}</span>
-              <span className="text-xs text-gray-500">{layout.style} • {layout.alignment} • {layout.font}</span>
+              <div className={`w-10 h-6 bg-gray-400 border  ${shape.preview}`} />
+              <span className="text-sm font-medium text-gray-900 text-center">
+                {shape.name}
+              </span>
             </button>
           ))}
         </div>
@@ -1201,11 +1478,20 @@ export const CardEditor: React.FC<CardEditorProps> = ({
               <div className="border-b-2 border-blue-100 p-6 bg-gradient-to-r from-blue-50 via-white to-purple-50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg lg:text-xl font-extrabold text-blue-900 tracking-tight drop-shadow-sm" style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}>
-                      {existingCard ? "Edit Business Card" : "Create New Business Card"}
+                    <h2
+                      className="text-lg lg:text-xl font-extrabold text-blue-900 tracking-tight drop-shadow-sm"
+                      style={{
+                        fontFamily: "'Montserrat', 'Segoe UI', sans-serif",
+                      }}
+                    >
+                      {existingCard
+                        ? "Edit Business Card"
+                        : "Create New Business Card"}
                     </h2>
                     <p className="text-base text-gray-600">
-                      {existingCard ? "Update your card information" : "Fill in your details to create your digital business card"}
+                      {existingCard
+                        ? "Update your card information"
+                        : "Fill in your details to create your digital business card"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1241,7 +1527,9 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                         }`}
                         type="button"
                         aria-current={activeTab === tab.id ? "page" : undefined}
-                        style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}
+                        style={{
+                          fontFamily: "'Montserrat', 'Segoe UI', sans-serif",
+                        }}
                       >
                         <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                         {tab.label}
