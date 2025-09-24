@@ -15,7 +15,7 @@ import {
   Calendar,
   Shield,
 } from "lucide-react";
-import { useAdminData } from "../hooks/useAdminData";
+import { useAdminData } from "../../hooks/useAdminData";
 import { AdminUserTable } from "./AdminUserTable";
 import { AdminCardTable } from "./AdminCardTable";
 import { AdminAnalytics } from "./AdminAnalytics";
@@ -89,14 +89,16 @@ export const AdminDashboard: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-gray-700 font-semibold tracking-wide">Loading admin dashboard...</p>
+          <p className="text-lg text-gray-700 font-semibold tracking-wide">
+            Loading admin dashboard...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-  <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-purple-100 font-sans">
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-purple-100 font-sans">
       {/* Sidebar */}
       <div
         className={`
@@ -108,9 +110,23 @@ export const AdminDashboard: React.FC = () => {
           lg:translate-x-0 lg:static lg:inset-0
         `}
       >
-        <div className={`flex items-center justify-between h-16 sm:h-20 px-2 sm:px-4 border-b border-blue-100 ${sidebarCollapsed ? "justify-center" : ""}`}>
-          <div className={`flex items-center ${sidebarCollapsed ? "justify-center w-full" : "gap-2 sm:gap-3"}`}>
-            <img src="/scc.png" alt="Logo" className={`rounded-full shadow ${sidebarCollapsed ? "w-10 h-10" : "w-10 h-10 sm:w-14 sm:h-14"}`} />
+        <div
+          className={`flex items-center justify-between h-16 sm:h-20 px-2 sm:px-4 border-b border-blue-100 ${
+            sidebarCollapsed ? "justify-center" : ""
+          }`}
+        >
+          <div
+            className={`flex items-center ${
+              sidebarCollapsed ? "justify-center w-full" : "gap-2 sm:gap-3"
+            }`}
+          >
+            <img
+              src="/scc.png"
+              alt="Logo"
+              className={`rounded-full shadow ${
+                sidebarCollapsed ? "w-10 h-10" : "w-10 h-10 sm:w-14 sm:h-14"
+              }`}
+            />
             {/* {!sidebarCollapsed && (
               <span className="text-lg sm:text-2xl font-bold text-blue-700 tracking-tight ml-2">Admin</span>
             )} */}
@@ -123,9 +139,33 @@ export const AdminDashboard: React.FC = () => {
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? (
-                <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                <svg
+                  className="w-6 h-6 text-blue-700"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
               ) : (
-                <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                <svg
+                  className="w-6 h-6 text-blue-700"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               )}
             </button>
             {/* Mobile close button */}
@@ -138,7 +178,11 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <nav className={`mt-4 sm:mt-8 ${sidebarCollapsed ? "px-1" : "px-2 sm:px-4"} space-y-1`}>
+        <nav
+          className={`mt-4 sm:mt-8 ${
+            sidebarCollapsed ? "px-1" : "px-2 sm:px-4"
+          } space-y-1`}
+        >
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -149,24 +193,32 @@ export const AdminDashboard: React.FC = () => {
                     setSidebarOpen(false);
                   }}
                   className={`
-                    w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3 sm:gap-4"}
+                    w-full flex items-center ${
+                      sidebarCollapsed ? "justify-center" : "gap-3 sm:gap-4"
+                    }
                     px-2 sm:px-4 py-2 sm:py-3 rounded-xl
                     text-base sm:text-lg font-medium transition-all duration-150 mb-1 shadow-sm
-                    ${activeTab === item.id
-                      ? "bg-gradient-to-r from-blue-100 to-purple-50 text-blue-800 border-l-4 border-blue-600 shadow-lg"
-                      : "text-gray-600 hover:bg-blue-200/80 hover:text-blue-900 hover:shadow-md"}
+                    ${
+                      activeTab === item.id
+                        ? "bg-gradient-to-r from-blue-100 to-purple-50 text-blue-800 border-l-4 border-blue-600 shadow-lg"
+                        : "text-gray-600 hover:bg-blue-200/80 hover:text-blue-900 hover:shadow-md"
+                    }
                     ${sidebarCollapsed ? "justify-center px-0" : ""}
                   `}
-                  onMouseEnter={e => {
+                  onMouseEnter={(e) => {
                     if (sidebarCollapsed) {
-                      const tooltip = e.currentTarget.nextSibling as HTMLElement | null;
-                      if (tooltip && tooltip.classList) tooltip.classList.remove('hidden');
+                      const tooltip = e.currentTarget
+                        .nextSibling as HTMLElement | null;
+                      if (tooltip && tooltip.classList)
+                        tooltip.classList.remove("hidden");
                     }
                   }}
-                  onMouseLeave={e => {
+                  onMouseLeave={(e) => {
                     if (sidebarCollapsed) {
-                      const tooltip = e.currentTarget.nextSibling as HTMLElement | null;
-                      if (tooltip && tooltip.classList) tooltip.classList.add('hidden');
+                      const tooltip = e.currentTarget
+                        .nextSibling as HTMLElement | null;
+                      if (tooltip && tooltip.classList)
+                        tooltip.classList.add("hidden");
                     }
                   }}
                   tabIndex={0}
@@ -176,9 +228,7 @@ export const AdminDashboard: React.FC = () => {
                 </button>
                 {/* Tooltip for collapsed sidebar */}
                 {sidebarCollapsed && (
-                  <span
-                    className="hidden absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-1 rounded bg-blue-900 text-white text-xs font-semibold shadow-lg whitespace-nowrap z-50 pointer-events-none group-hover:block"
-                  >
+                  <span className="hidden absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-1 rounded bg-blue-900 text-white text-xs font-semibold shadow-lg whitespace-nowrap z-50 pointer-events-none group-hover:block">
                     {item.label}
                   </span>
                 )}
@@ -234,8 +284,12 @@ export const AdminDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-blue-100 to-white rounded-xl sm:rounded-2xl shadow-lg border border-blue-200 p-4 sm:p-8 hover:scale-[1.02] transition-transform">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-base font-semibold text-blue-700 mb-0.5 sm:mb-1">Total Users</p>
-                      <p className="text-2xl sm:text-4xl font-extrabold text-blue-900 drop-shadow">{analytics.totalUsers}</p>
+                      <p className="text-xs sm:text-base font-semibold text-blue-700 mb-0.5 sm:mb-1">
+                        Total Users
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-extrabold text-blue-900 drop-shadow">
+                        {analytics.totalUsers}
+                      </p>
                     </div>
                     <div className="w-9 h-9 sm:w-14 sm:h-14 bg-blue-200 rounded-lg sm:rounded-xl flex items-center justify-center shadow">
                       <Users className="w-5 h-5 sm:w-7 sm:h-7 text-blue-700" />
@@ -253,8 +307,12 @@ export const AdminDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-green-100 to-white rounded-xl sm:rounded-2xl shadow-lg border border-green-200 p-4 sm:p-8 hover:scale-[1.02] transition-transform">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-base font-semibold text-green-700 mb-0.5 sm:mb-1">Total Cards</p>
-                      <p className="text-2xl sm:text-4xl font-extrabold text-green-900 drop-shadow">{analytics.totalCards}</p>
+                      <p className="text-xs sm:text-base font-semibold text-green-700 mb-0.5 sm:mb-1">
+                        Total Cards
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-extrabold text-green-900 drop-shadow">
+                        {analytics.totalCards}
+                      </p>
                     </div>
                     <div className="w-9 h-9 sm:w-14 sm:h-14 bg-green-200 rounded-lg sm:rounded-xl flex items-center justify-center shadow">
                       <CreditCard className="w-5 h-5 sm:w-7 sm:h-7 text-green-700" />
@@ -272,8 +330,12 @@ export const AdminDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-purple-100 to-white rounded-xl sm:rounded-2xl shadow-lg border border-purple-200 p-4 sm:p-8 hover:scale-[1.02] transition-transform">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-base font-semibold text-purple-700 mb-0.5 sm:mb-1">Total Views</p>
-                      <p className="text-2xl sm:text-4xl font-extrabold text-purple-900 drop-shadow">{analytics.totalViews}</p>
+                      <p className="text-xs sm:text-base font-semibold text-purple-700 mb-0.5 sm:mb-1">
+                        Total Views
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-extrabold text-purple-900 drop-shadow">
+                        {analytics.totalViews}
+                      </p>
                     </div>
                     <div className="w-9 h-9 sm:w-14 sm:h-14 bg-purple-200 rounded-lg sm:rounded-xl flex items-center justify-center shadow">
                       <Eye className="w-5 h-5 sm:w-7 sm:h-7 text-purple-700" />
@@ -291,8 +353,12 @@ export const AdminDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-orange-100 to-white rounded-xl sm:rounded-2xl shadow-lg border border-orange-200 p-4 sm:p-8 hover:scale-[1.02] transition-transform">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-base font-semibold text-orange-700 mb-0.5 sm:mb-1">Active Users</p>
-                      <p className="text-2xl sm:text-4xl font-extrabold text-orange-900 drop-shadow">{analytics.activeUsers}</p>
+                      <p className="text-xs sm:text-base font-semibold text-orange-700 mb-0.5 sm:mb-1">
+                        Active Users
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-extrabold text-orange-900 drop-shadow">
+                        {analytics.activeUsers}
+                      </p>
                     </div>
                     <div className="w-9 h-9 sm:w-14 sm:h-14 bg-orange-200 rounded-lg sm:rounded-xl flex items-center justify-center shadow">
                       <UserCheck className="w-5 h-5 sm:w-7 sm:h-7 text-orange-700" />
@@ -311,7 +377,9 @@ export const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                 {/* Recent Users */}
                 <div className="bg-white/90 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 p-4 sm:p-8">
-                  <h3 className="text-base sm:text-xl font-bold text-blue-900 mb-3 sm:mb-6 tracking-tight">Recent Users</h3>
+                  <h3 className="text-base sm:text-xl font-bold text-blue-900 mb-3 sm:mb-6 tracking-tight">
+                    Recent Users
+                  </h3>
                   <div className="space-y-2 sm:space-y-4">
                     {users.slice(0, 5).map((user) => (
                       <div
@@ -325,7 +393,9 @@ export const AdminDashboard: React.FC = () => {
                           <p className="font-semibold text-blue-900 text-sm sm:text-lg">
                             {user.name || "Unnamed User"}
                           </p>
-                          <p className="text-xs sm:text-sm text-blue-600">{user.email}</p>
+                          <p className="text-xs sm:text-sm text-blue-600">
+                            {user.email}
+                          </p>
                         </div>
                         <span className="text-xs text-blue-400 font-medium">
                           {new Date(user.created_at).toLocaleDateString()}
@@ -337,7 +407,9 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* Recent Cards */}
                 <div className="bg-white/90 rounded-xl sm:rounded-2xl shadow-lg border border-green-100 p-4 sm:p-8">
-                  <h3 className="text-base sm:text-xl font-bold text-green-900 mb-3 sm:mb-6 tracking-tight">Recent Cards</h3>
+                  <h3 className="text-base sm:text-xl font-bold text-green-900 mb-3 sm:mb-6 tracking-tight">
+                    Recent Cards
+                  </h3>
                   <div className="space-y-2 sm:space-y-4">
                     {cards.slice(0, 5).map((card) => (
                       <div

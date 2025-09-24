@@ -235,7 +235,7 @@ export const AdminCardTable: React.FC<AdminCardTableProps> = ({
             </thead>
             <tbody className="bg-white divide-y divide-gray-50">
               {filteredCards.map((card) => (
-                <tr key={card.id} className="hover:bg-blue-100 transition">
+                <tr key={card.id} className="hover:bg-green-100 transition">
                   <td className="px-4 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"

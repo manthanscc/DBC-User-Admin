@@ -17,12 +17,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
-import { supabase } from "../lib/supabase";
-import { CardEditor } from "./CardEditor";
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase";
+import { CardEditor } from "../CardEditor";
 // import { CardPreview } from "./CardPreview";
-import { AnalyticsPage } from "./AnalyticsPage";
-import type { Database } from "../lib/supabase";
+import { AnalyticsPage } from "../AnalyticsPage";
+import type { Database } from "../../lib/supabase";
 
 type BusinessCard = Database["public"]["Tables"]["business_cards"]["Row"];
 type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
@@ -256,16 +256,16 @@ export const AdminPanel: React.FC = () => {
                       {card.is_published ? "Published" : "Draft"}
                     </span>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-500 mt-4">
-                        <div className="flex items-center gap-1 justify-start">
-                          <Eye className="w-5 h-5 text-blue-400 min-w-[20px]" />
-                          <span className="font-semibold text-blue-700">
-                            {card.view_count || 0} views
-                          </span>
-                        </div>
-                        <span className="italic text-purple-600 font-medium text-xs sm:text-sm text-left sm:text-right">
-                          Updated {new Date(card.updated_at).toLocaleDateString()}
+                      <div className="flex items-center gap-1 justify-start">
+                        <Eye className="w-5 h-5 text-blue-400 min-w-[20px]" />
+                        <span className="font-semibold text-blue-700">
+                          {card.view_count || 0} views
                         </span>
                       </div>
+                      <span className="italic text-purple-600 font-medium text-xs sm:text-sm text-left sm:text-right">
+                        Updated {new Date(card.updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

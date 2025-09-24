@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { BorderBeam } from "../registry/magicui/border-beam";
 
 type AuthMode = "signin" | "signup";
 
@@ -41,7 +42,7 @@ export const AuthPage: React.FC = () => {
           navigate("/businesscard/admin");
         }
       }
-    } catch (err) {
+  } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -75,7 +76,10 @@ export const AuthPage: React.FC = () => {
         </div>
 
         {/* Auth Form */}
-  <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+  <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+    {/* Decorative animated border beam */}
+    <BorderBeam thickness={2} duration={20} colors={["#3b82f6","#6366f1","#8b5cf6","#ec4899"]} />
+    <div className="relative z-10">
           {/* Tab Navigation */}
           <div className="flex border-b border-gray-200 text-xs md:text-sm">
             <button
@@ -86,7 +90,7 @@ export const AuthPage: React.FC = () => {
               }}
               className={`flex-1 py-2 md:py-4 px-8 text-sm md:text-sm font-semibold transition-all duration-200 ${
                 mode === "signin"
-                  ? "text-blue-600 bg-blue-50 border-b-2 border-blue-600"
+                  ? "text-blue-600 bg-transparent border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -100,7 +104,7 @@ export const AuthPage: React.FC = () => {
               }}
               className={`flex-1 py-2 md:py-4 px-8 text-sm md:text-sm font-semibold transition-all duration-200 ${
                 mode === "signup"
-                  ? "text-blue-600 bg-blue-50 border-b-2 border-blue-600"
+                  ? "text-blue-600 bg-transparent border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -189,7 +193,8 @@ export const AuthPage: React.FC = () => {
                 "Create Account"
               )}
             </button>
-          </form>
+      </form>
+    </div>
         </div>
 
         {/* Footer */}

@@ -1,14 +1,21 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { AuthPage } from './components/AuthPage';
-import { AdminPanel } from './components/AdminPanel';
-import { PublicCard } from './components/PublicCard';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { AdminLogin } from './components/AdminLogin';
-import { AdminDashboard } from './components/AdminDashboard';
-import { AdminProtectedRoute } from './components/AdminProtectedRoute';
-import { useAuth } from './hooks/useAuth';
-import HomePage from './components/HomePage';
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import { AuthPage } from "./components/AuthPage";
+import { AdminPanel } from "./components/Admin-scc/AdminPanel";
+import { PublicCard } from "./components/PublicCard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminLogin } from "./components/Admin-scc/AdminLogin";
+import { AdminDashboard } from "./components/Admin-scc/AdminDashboard";
+import { AdminProtectedRoute } from "./components/Admin-scc/AdminProtectedRoute";
+import { useAuth } from "./hooks/useAuth";
+import HomePage from "./components/HomePage/HomePage";
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -35,16 +42,11 @@ const AppContent: React.FC = () => {
 
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={
-          user ? <Navigate to="/user-admin" replace /> : <HomePage />
-        } 
+      <Route
+        path="/"
+        element={user ? <Navigate to="/user-admin" replace /> : <HomePage />}
       />
-      <Route 
-        path="/admin-scc/login" 
-        element={<AdminLogin />} 
-      />
+      <Route path="/admin-scc/login" element={<AdminLogin />} />
       <Route
         path="/admin-scc/dashboard"
         element={
@@ -53,9 +55,9 @@ const AppContent: React.FC = () => {
           </AdminProtectedRoute>
         }
       />
-      <Route 
-        path="/admin-scc" 
-        element={<Navigate to="/admin-scc/login" replace />} 
+      <Route
+        path="/admin-scc"
+        element={<Navigate to="/admin-scc/login" replace />}
       />
       <Route
         path="/user-admin/:username?"

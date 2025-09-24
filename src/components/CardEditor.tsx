@@ -301,23 +301,86 @@ const LAYOUT_ALIGNMENTS = [
   { value: "right", label: "Right" },
 ];
 const LAYOUT_FONTS = [
-  { value: "Inter", label: "Inter", style: { fontFamily: 'Inter, Arial, sans-serif' } },
-  { value: "Georgia", label: "Georgia", style: { fontFamily: 'Georgia, serif' } },
-  { value: "Helvetica", label: "Helvetica", style: { fontFamily: 'Helvetica, Arial, sans-serif' } },
-  { value: "Poppins", label: "Poppins", style: { fontFamily: 'Poppins, Arial, sans-serif' } },
-  { value: "Playfair Display", label: "Playfair Display", style: { fontFamily: 'Playfair Display, Georgia, serif' } },
-  { value: "Roboto", label: "Roboto", style: { fontFamily: 'Roboto, Arial, sans-serif' } },
-  { value: "Montserrat", label: "Montserrat", style: { fontFamily: 'Montserrat, Arial, sans-serif' } },
-{ value: "Raleway", label: "Raleway", style: { fontFamily: 'Raleway, Arial, sans-serif' } },
-{ value: "Lora", label: "Lora", style: { fontFamily: 'Lora, Georgia, serif' } },
-{ value: "Merriweather", label: "Merriweather", style: { fontFamily: 'Merriweather, Georgia, serif' } },
-{ value: "Nunito", label: "Nunito", style: { fontFamily: 'Nunito, Arial, sans-serif' } },
-{ value: "Oswald", label: "Oswald", style: { fontFamily: 'Oswald, Arial, sans-serif' } },
-{ value: "PT Serif", label: "PT Serif", style: { fontFamily: 'PT Serif, Georgia, serif' } },
-{ value: "Ubuntu", label: "Ubuntu", style: { fontFamily: 'Ubuntu, Arial, sans-serif' } },
-{ value: "Work Sans", label: "Work Sans", style: { fontFamily: 'Work Sans, Arial, sans-serif' } },
-{ value: "Source Sans Pro", label: "Source Sans Pro", style: { fontFamily: 'Source Sans Pro, Arial, sans-serif' } },
-
+  {
+    value: "Inter",
+    label: "Inter",
+    style: { fontFamily: "Inter, Arial, sans-serif" },
+  },
+  {
+    value: "Georgia",
+    label: "Georgia",
+    style: { fontFamily: "Georgia, serif" },
+  },
+  {
+    value: "Helvetica",
+    label: "Helvetica",
+    style: { fontFamily: "Helvetica, Arial, sans-serif" },
+  },
+  {
+    value: "Poppins",
+    label: "Poppins",
+    style: { fontFamily: "Poppins, Arial, sans-serif" },
+  },
+  {
+    value: "Playfair Display",
+    label: "Playfair Display",
+    style: { fontFamily: "Playfair Display, Georgia, serif" },
+  },
+  {
+    value: "Roboto",
+    label: "Roboto",
+    style: { fontFamily: "Roboto, Arial, sans-serif" },
+  },
+  {
+    value: "Montserrat",
+    label: "Montserrat",
+    style: { fontFamily: "Montserrat, Arial, sans-serif" },
+  },
+  {
+    value: "Raleway",
+    label: "Raleway",
+    style: { fontFamily: "Raleway, Arial, sans-serif" },
+  },
+  {
+    value: "Lora",
+    label: "Lora",
+    style: { fontFamily: "Lora, Georgia, serif" },
+  },
+  {
+    value: "Merriweather",
+    label: "Merriweather",
+    style: { fontFamily: "Merriweather, Georgia, serif" },
+  },
+  {
+    value: "Nunito",
+    label: "Nunito",
+    style: { fontFamily: "Nunito, Arial, sans-serif" },
+  },
+  {
+    value: "Oswald",
+    label: "Oswald",
+    style: { fontFamily: "Oswald, Arial, sans-serif" },
+  },
+  {
+    value: "PT Serif",
+    label: "PT Serif",
+    style: { fontFamily: "PT Serif, Georgia, serif" },
+  },
+  {
+    value: "Ubuntu",
+    label: "Ubuntu",
+    style: { fontFamily: "Ubuntu, Arial, sans-serif" },
+  },
+  {
+    value: "Work Sans",
+    label: "Work Sans",
+    style: { fontFamily: "Work Sans, Arial, sans-serif" },
+  },
+  {
+    value: "Source Sans Pro",
+    label: "Source Sans Pro",
+    style: { fontFamily: "Source Sans Pro, Arial, sans-serif" },
+  },
 ];
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -1128,18 +1191,27 @@ export const CardEditor: React.FC<CardEditorProps> = ({
 
   const renderDesign = () => (
     <div className="space-y-8">
-        {/* Layout Selection - Separated */}
+      {/* Layout Selection - Separated */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Options</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Layout Options
+        </h3>
         <div className="flex flex-col md:flex-row gap-6">
           {/* Style */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Style
+            </label>
             <div className="flex flex-wrap gap-2">
               {LAYOUT_STYLES.map((s) => (
                 <button
                   key={s.value}
-                  onClick={() => handleInputChange("layout", { ...formData.layout, style: s.value })}
+                  onClick={() =>
+                    handleInputChange("layout", {
+                      ...formData.layout,
+                      style: s.value,
+                    })
+                  }
                   className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                     formData.layout.style === s.value
                       ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -1154,12 +1226,19 @@ export const CardEditor: React.FC<CardEditorProps> = ({
           </div>
           {/* Alignment */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Alignment</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alignment
+            </label>
             <div className="flex flex-wrap gap-2">
               {LAYOUT_ALIGNMENTS.map((a) => (
                 <button
                   key={a.value}
-                  onClick={() => handleInputChange("layout", { ...formData.layout, alignment: a.value })}
+                  onClick={() =>
+                    handleInputChange("layout", {
+                      ...formData.layout,
+                      alignment: a.value,
+                    })
+                  }
                   className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                     formData.layout.alignment === a.value
                       ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -1174,7 +1253,9 @@ export const CardEditor: React.FC<CardEditorProps> = ({
           </div>
           {/* Font */}
           <div className="flex-1 min-w-[300px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Font</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Font
+            </label>
             <div
               className=" flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-blue-50"
               style={{ maxHeight: 196, minHeight: 100, paddingRight: 4 }}
@@ -1182,7 +1263,12 @@ export const CardEditor: React.FC<CardEditorProps> = ({
               {LAYOUT_FONTS.map((f) => (
                 <button
                   key={f.value}
-                  onClick={() => handleInputChange("layout", { ...formData.layout, font: f.value })}
+                  onClick={() =>
+                    handleInputChange("layout", {
+                      ...formData.layout,
+                      font: f.value,
+                    })
+                  }
                   className={`px-4 py-2 m-1 rounded-lg border-2 font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                     formData.layout.font === f.value
                       ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -1318,8 +1404,7 @@ export const CardEditor: React.FC<CardEditorProps> = ({
         )}
       </div>
 
-    
-         {/* Shape Selection - Mobile Friendly */}
+      {/* Shape Selection - Mobile Friendly */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Card Shape</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1333,7 +1418,9 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                   : "border-gray-200 hover:border-blue-300"
               }`}
             >
-              <div className={`w-10 h-6 bg-gray-400 border  ${shape.preview}`} />
+              <div
+                className={`w-10 h-6 bg-gray-400 border  ${shape.preview}`}
+              />
               <span className="text-sm font-medium text-gray-900 text-center">
                 {shape.name}
               </span>
@@ -1614,18 +1701,8 @@ export const CardEditor: React.FC<CardEditorProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b-2 border-blue-100 mb-4">
               <div>
                 <div className="flex items-center gap-2 pb-0 lg:pl-0 pl-[50%] mb-4">
-                  {autoSaving && (
-                    <div className="flex items-center gap-2 text-blue-600">
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Auto-saving...</span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-2">
-                    {formData.is_published ? (
-                      <Lock className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Globe className="w-5 h-5 text-gray-400" />
-                    )}
+                    
                     <label className="flex items-center gap-2 cursor-pointer">
                       <button
                         type="button"
@@ -1652,6 +1729,17 @@ export const CardEditor: React.FC<CardEditorProps> = ({
                         {formData.is_published ? "Published" : "Draft"}
                       </span>
                     </label>
+                    {autoSaving && (
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span className="text-sm ">Autosaving...</span>
+                      </div>
+                    )}
+                    {formData.is_published ? (
+                      <Lock className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <Globe className="w-5 h-5 text-gray-400" />
+                    )}
                   </div>
                 </div>
               </div>
