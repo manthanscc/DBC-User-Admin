@@ -147,7 +147,7 @@ export const demoCards: ProfileCard[] = [
         icon: "twitter",
       },
     ],
-    shareLink: "/c/demo",
+    shareLink: "/c/scc",
     theme: themes[0],
     bio: "We build custom web and mobile apps.\nTrusted by 200+ clients.",
   },
